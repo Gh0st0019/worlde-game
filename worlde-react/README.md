@@ -4,7 +4,7 @@ Gioco in stile pixel basato sulla logica di `worlde.py`: indovina la parola ital
 
 ## Live
 
-Dopo il primo deploy: https://gh0st0019.github.io/worlde-game/
+Dopo la configurazione DNS: https://worlde.online/
 
 ## Avvio
 
