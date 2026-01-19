@@ -17,6 +17,16 @@
   z-index: 1;
 }
 
+.credit {
+  position: fixed;
+  left: calc(var(--page-padding) + env(safe-area-inset-left));
+  bottom: calc(var(--page-padding) + env(safe-area-inset-bottom));
+  font-size: var(--hint-font);
+  color: var(--ink-dim);
+  letter-spacing: var(--meta-spacing);
+  z-index: 2;
+}
+
 .header {
   display: grid;
   gap: var(--gap-md);

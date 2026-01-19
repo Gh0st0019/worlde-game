@@ -312,6 +312,9 @@ function App() {
           </div>
         )}
       </div>
+      <footer className="credit">
+        Made with <span role="img" aria-label="heart">❤️</span> by Ch3rry
+      </footer>
     </div>
   )
 }
