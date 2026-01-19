@@ -15,6 +15,10 @@
   --accent: #f3c969;
   --accent-2: #4ddbb0;
   --accent-3: #f26b7a;
+  --glow: rgba(243, 201, 105, 0.25);
+  --glow-cool: rgba(77, 219, 176, 0.18);
+  --pixel-unit: clamp(0.12rem, 0.4vw, 0.18rem);
+  --decor-opacity: 0.6;
   --container-max: 22.5rem;
   --page-padding: clamp(1rem, 4vw, 1.5rem);
   --gap-xl: clamp(1.2rem, 5vw, 1.8rem);
@@ -74,9 +78,11 @@ body {
   background-image:
     radial-gradient(circle at 20% 10%, #203750 0%, transparent 55%),
     radial-gradient(circle at 80% 20%, #1a2e43 0%, transparent 60%),
+    radial-gradient(circle at 30% 80%, var(--glow) 0%, transparent 45%),
+    radial-gradient(circle at 80% 75%, var(--glow-cool) 0%, transparent 50%),
     linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0.08rem, transparent 0.08rem),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0.08rem, transparent 0.08rem);
-  background-size: auto, auto, 0.9rem 0.9rem, 0.9rem 0.9rem;
+  background-size: auto, auto, auto, auto, 0.9rem 0.9rem, 0.9rem 0.9rem;
   display: flex;
   justify-content: center;
   align-items: stretch;

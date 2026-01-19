@@ -141,129 +141,140 @@ function App() {
 
   return (
     <div className="app-shell">
+      <div className="pixel-decor" aria-hidden="true">
+        <span className="sprite sprite--ghost sprite--left" />
+        <span className="sprite sprite--cat sprite--right" />
+        <span className="sparkle sparkle--top" />
+        <span className="sparkle sparkle--bottom" />
+      </div>
+
       <div className={`app app--${gameState}`}>
-      <header className="header">
-        <div className="header__badge">
-          <span className="header__title">Worlde</span>
-          <span className="header__subtitle">Pixel Italiano</span>
-        </div>
-        <div className="header__meta">
-          <div className="meta">
-            <span className="meta__label">Parola</span>
-            <span className="meta__value">{wordLength} lettere</span>
+        <header className="header">
+          <div className="header__badge">
+            <span className="header__title">Worlde</span>
+            <span className="header__subtitle">Pixel Italiano</span>
           </div>
-          <div className="meta">
-            <span className="meta__label">Livello</span>
-            <span className="meta__value">{level}</span>
-          </div>
-          <div className="meta">
-            <span className="meta__label">Tentativi</span>
-            <span className="meta__value">
-              {attemptsLeft}/{MAX_ATTEMPTS}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <main className="cabinet">
-        <section className="screen">
-          <div className="screen__frame">
-            <div className="screen__glow" />
-            <div className="board" style={{ '--word-length': wordLength }}>
-              {guessedWord.map((letter, index) => {
-                const isEmpty = letter === '_'
-                return (
-                  <div
-                    className={`tile ${isEmpty ? 'tile--empty' : 'tile--filled'}`}
-                    key={`${letter}-${index}`}
-                  >
-                    <span className="tile__char">{letter}</span>
-                  </div>
-                )
-              })}
+          <div className="header__meta">
+            <div className="meta">
+              <span className="meta__label">Parola</span>
+              <span className="meta__value">{wordLength} lettere</span>
             </div>
-
-            <div className="attempts" aria-label="Tentativi rimasti">
-              {ATTEMPT_INDICES.map((index) => (
-                <span
-                  key={`life-${index}`}
-                  className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
-                />
-              ))}
+            <div className="meta">
+              <span className="meta__label">Livello</span>
+              <span className="meta__value">{level}</span>
             </div>
-
-            <div className={`message message--${gameState}`} aria-live="polite">
-              {message}
+            <div className="meta">
+              <span className="meta__label">Tentativi</span>
+              <span className="meta__value">
+                {attemptsLeft}/{MAX_ATTEMPTS}
+              </span>
             </div>
           </div>
-        </section>
+        </header>
 
-        <section className="controls">
-          <form className="guess" onSubmit={handleSubmit}>
-            <label className="guess__label" htmlFor="letter-input">
-              Inserisci una lettera
-            </label>
-            <div className="guess__row">
-              <input
-                id="letter-input"
-                className="guess__input"
-                type="text"
-                value={inputValue}
-                onChange={handleInputChange}
-                maxLength={1}
-                autoComplete="off"
-                spellCheck="false"
-                disabled={gameState !== 'playing'}
-              />
-              <button className="guess__button" type="submit" disabled={gameState !== 'playing'}>
-                Invia
-              </button>
-            </div>
-            <div className="guess__hint">Usa tastiera o click sui tasti.</div>
-          </form>
-
-          <div className="keyboard" aria-label="Tastiera virtuale">
-            {KEY_ROWS.map((row) => (
-              <div className="keyboard__row" key={row} style={{ '--keys': row.length }}>
-                {row.split('').map((letter) => {
-                  const status = letterStatus[letter]
+        <main className="cabinet">
+          <section className="screen">
+            <div className="screen__frame">
+              <div className="screen__glow" />
+              <div className="board" style={{ '--word-length': wordLength }}>
+                {guessedWord.map((letter, index) => {
+                  const isEmpty = letter === '_'
                   return (
-                    <button
-                      key={letter}
-                      type="button"
-                      className={`key ${status ? `key--${status}` : ''}`}
-                      onClick={() => applyGuess(letter)}
-                      disabled={gameState !== 'playing'}
+                    <div
+                      className={`tile ${isEmpty ? 'tile--empty' : 'tile--filled'}`}
+                      key={`${letter}-${index}`}
                     >
-                      {letter}
-                    </button>
+                      <span className="tile__char">{letter}</span>
+                    </div>
                   )
                 })}
               </div>
-            ))}
-          </div>
 
-          <div className="actions">
-            <button className="action" type="button" onClick={startNewGame}>
-              Nuova partita
-            </button>
-          </div>
-        </section>
-      </main>
+              <div className="attempts" aria-label="Tentativi rimasti">
+                {ATTEMPT_INDICES.map((index) => (
+                  <span
+                    key={`life-${index}`}
+                    className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
+                  />
+                ))}
+              </div>
 
-      {gameState !== 'playing' && (
-        <div className="overlay" role="status" aria-live="polite">
-          <div className="overlay__panel">
-            <div className="overlay__title">
-              {gameState === 'won' ? 'Vittoria!' : 'Game over'}
+              <div className={`message message--${gameState}`} aria-live="polite">
+                {message}
+              </div>
             </div>
-            <div className="overlay__text">{message}</div>
-            <button className="action" type="button" onClick={startNewGame}>
-              Gioca ancora
-            </button>
+          </section>
+
+          <section className="controls">
+            <form className="guess" onSubmit={handleSubmit}>
+              <label className="guess__label" htmlFor="letter-input">
+                Inserisci una lettera
+              </label>
+              <div className="guess__row">
+                <input
+                  id="letter-input"
+                  className="guess__input"
+                  type="text"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  maxLength={1}
+                  autoComplete="off"
+                  spellCheck="false"
+                  disabled={gameState !== 'playing'}
+                />
+                <button
+                  className="guess__button"
+                  type="submit"
+                  disabled={gameState !== 'playing'}
+                >
+                  Invia
+                </button>
+              </div>
+              <div className="guess__hint">Usa tastiera o click sui tasti.</div>
+            </form>
+
+            <div className="keyboard" aria-label="Tastiera virtuale">
+              {KEY_ROWS.map((row) => (
+                <div className="keyboard__row" key={row} style={{ '--keys': row.length }}>
+                  {row.split('').map((letter) => {
+                    const status = letterStatus[letter]
+                    return (
+                      <button
+                        key={letter}
+                        type="button"
+                        className={`key ${status ? `key--${status}` : ''}`}
+                        onClick={() => applyGuess(letter)}
+                        disabled={gameState !== 'playing'}
+                      >
+                        {letter}
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+
+            <div className="actions">
+              <button className="action" type="button" onClick={startNewGame}>
+                Nuova partita
+              </button>
+            </div>
+          </section>
+        </main>
+
+        {gameState !== 'playing' && (
+          <div className="overlay" role="status" aria-live="polite">
+            <div className="overlay__panel">
+              <div className="overlay__title">
+                {gameState === 'won' ? 'Vittoria!' : 'Game over'}
+              </div>
+              <div className="overlay__text">{message}</div>
+              <button className="action" type="button" onClick={startNewGame}>
+                Gioca ancora
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   )
