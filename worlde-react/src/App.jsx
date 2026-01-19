@@ -4,7 +4,7 @@ import './App.css'
 
 const MAX_ATTEMPTS = 10
 const ATTEMPT_INDICES = Array.from({ length: MAX_ATTEMPTS }, (_, index) => index)
-const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('')
+const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
 const getStoredLevel = () => {
   if (typeof window === 'undefined') {
@@ -232,20 +232,24 @@ function App() {
           </form>
 
           <div className="keyboard" aria-label="Tastiera virtuale">
-            {LETTERS.map((letter) => {
-              const status = letterStatus[letter]
-              return (
-                <button
-                  key={letter}
-                  type="button"
-                  className={`key ${status ? `key--${status}` : ''}`}
-                  onClick={() => applyGuess(letter)}
-                  disabled={gameState !== 'playing'}
-                >
-                  {letter}
-                </button>
-              )
-            })}
+            {KEY_ROWS.map((row) => (
+              <div className="keyboard__row" key={row} style={{ '--keys': row.length }}>
+                {row.split('').map((letter) => {
+                  const status = letterStatus[letter]
+                  return (
+                    <button
+                      key={letter}
+                      type="button"
+                      className={`key ${status ? `key--${status}` : ''}`}
+                      onClick={() => applyGuess(letter)}
+                      disabled={gameState !== 'playing'}
+                    >
+                      {letter}
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
           </div>
 
           <div className="actions">

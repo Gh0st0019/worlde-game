@@ -7,32 +7,32 @@
   --bg-mid: #152235;
   --bg-bright: #223b52;
   --panel: #0f1626;
-  --border: #25324a;
+  --card: #0e1729;
+  --border: #29354d;
   --shadow: #05070c;
   --ink: #f4f1de;
   --ink-dim: #a3acc0;
   --accent: #f3c969;
   --accent-2: #4ddbb0;
   --accent-3: #f26b7a;
-  --page-padding: clamp(14px, 3vw, 32px);
-  --gap-lg: clamp(18px, 3.6vw, 26px);
-  --gap-md: clamp(12px, 2.6vw, 18px);
-  --gap-sm: clamp(8px, 2vw, 14px);
-  --cabinet-padding: clamp(16px, 3.2vw, 24px);
-  --frame-padding: clamp(16px, 3vw, 22px);
-  --tile-min: clamp(34px, 11vw, 60px);
-  --tile-font: clamp(20px, 4.8vw, 30px);
-  --tile-spacing: clamp(2px, 0.9vw, 4px);
-  --key-min: clamp(32px, 8vw, 46px);
-  --key-font: clamp(16px, 4.2vw, 20px);
-  --key-pad: clamp(10px, 2.6vw, 14px);
-  --input-height: clamp(54px, 10vw, 66px);
-  --input-width: clamp(76px, 16vw, 92px);
-  --input-font: clamp(24px, 6.2vw, 34px);
-  --message-font: clamp(12px, 3.2vw, 15px);
-  --header-title: clamp(22px, 5vw, 30px);
-  --meta-label: clamp(10px, 2.6vw, 12px);
-  --meta-value: clamp(14px, 3.4vw, 18px);
+  --phone-width: 390px;
+  --page-padding: 18px;
+  --gap-lg: 18px;
+  --gap-md: 12px;
+  --gap-sm: 8px;
+  --tile-size: 44px;
+  --tile-gap: 8px;
+  --tile-font: 26px;
+  --tile-spacing: 2px;
+  --key-height: 44px;
+  --key-font: 18px;
+  --input-height: 52px;
+  --input-width: 78px;
+  --input-font: 30px;
+  --message-font: 14px;
+  --header-title: 22px;
+  --meta-label: 10px;
+  --meta-value: 14px;
 }
 
 *,
@@ -48,12 +48,11 @@ body {
   color: var(--ink);
   background-color: var(--bg-deep);
   background-image:
-    radial-gradient(circle at 10% 10%, #203750 0%, transparent 55%),
-    radial-gradient(circle at 90% 20%, #1a2e43 0%, transparent 60%),
+    radial-gradient(circle at 20% 10%, #203750 0%, transparent 55%),
+    radial-gradient(circle at 80% 20%, #1a2e43 0%, transparent 60%),
     linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: auto, auto, 12px 12px, 12px 12px;
-  background-attachment: fixed;
+  background-size: auto, auto, 14px 14px, 14px 14px;
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -62,12 +61,9 @@ body {
 }
 
 #root {
-  width: min(1100px, 100%);
-  min-height: 100%;
-  padding: calc(var(--page-padding) + env(safe-area-inset-top))
-    calc(var(--page-padding) + env(safe-area-inset-right))
-    calc(var(--page-padding) + env(safe-area-inset-bottom))
-    calc(var(--page-padding) + env(safe-area-inset-left));
+  width: min(100%, var(--phone-width));
+  min-height: 100vh;
+  margin: 0 auto;
 }
 
 a {
@@ -111,28 +107,36 @@ input {
   color: #0b0f1a;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 360px) {
   :root {
-    --page-padding: clamp(12px, 4vw, 18px);
-    --gap-lg: clamp(16px, 4vw, 22px);
-    --gap-md: clamp(10px, 3vw, 16px);
-    --gap-sm: clamp(8px, 2.8vw, 12px);
-    --cabinet-padding: clamp(14px, 4vw, 20px);
-    --frame-padding: clamp(14px, 4vw, 20px);
-    --tile-min: clamp(36px, 12vw, 52px);
-    --tile-font: clamp(22px, 6vw, 32px);
-    --tile-spacing: clamp(2px, 1vw, 4px);
-    --key-min: clamp(34px, 11vw, 44px);
-    --key-font: clamp(16px, 5vw, 20px);
-    --key-pad: clamp(10px, 3vw, 14px);
-    --input-height: clamp(56px, 13vw, 66px);
-    --input-width: clamp(76px, 20vw, 92px);
-    --input-font: clamp(24px, 7vw, 34px);
+    --page-padding: 14px;
+    --gap-lg: 16px;
+    --gap-md: 10px;
+    --tile-size: 40px;
+    --tile-gap: 6px;
+    --tile-font: 24px;
+    --key-height: 40px;
+    --key-font: 16px;
+    --input-height: 48px;
+    --input-width: 72px;
+    --input-font: 26px;
+    --message-font: 13px;
+    --header-title: 20px;
+  }
+}
+
+@media (min-width: 480px) and (pointer: coarse) {
+  :root {
+    --phone-width: 430px;
   }
 }
 
 @supports (height: 100dvh) {
   body {
+    min-height: 100dvh;
+  }
+
+  #root {
     min-height: 100dvh;
   }
 }
