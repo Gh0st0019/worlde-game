@@ -15,24 +15,43 @@
   --accent: #f3c969;
   --accent-2: #4ddbb0;
   --accent-3: #f26b7a;
-  --phone-width: 390px;
-  --page-padding: 18px;
-  --gap-lg: 18px;
-  --gap-md: 12px;
-  --gap-sm: 8px;
-  --tile-size: 44px;
-  --tile-gap: 8px;
-  --tile-font: 26px;
-  --tile-spacing: 2px;
-  --key-height: 44px;
-  --key-font: 18px;
-  --input-height: 52px;
-  --input-width: 78px;
-  --input-font: 30px;
-  --message-font: 14px;
-  --header-title: 22px;
-  --meta-label: 10px;
-  --meta-value: 14px;
+  --container-max: 22.5rem;
+  --page-padding: clamp(1rem, 4vw, 1.5rem);
+  --gap-xl: clamp(1.2rem, 5vw, 1.8rem);
+  --gap-lg: clamp(1rem, 4vw, 1.5rem);
+  --gap-md: clamp(0.75rem, 3vw, 1.1rem);
+  --gap-sm: clamp(0.5rem, 2vw, 0.9rem);
+  --gap-xs: clamp(0.3rem, 1.6vw, 0.5rem);
+  --tile-size: clamp(2.5rem, 11vw, 3.4rem);
+  --tile-gap: clamp(0.4rem, 2.2vw, 0.65rem);
+  --tile-font: clamp(1.4rem, 6vw, 2rem);
+  --tile-spacing: clamp(0.08rem, 0.6vw, 0.18rem);
+  --key-height: clamp(2.6rem, 10vw, 3.2rem);
+  --key-font: clamp(1rem, 4.6vw, 1.4rem);
+  --input-height: clamp(2.8rem, 10vw, 3.4rem);
+  --input-width: clamp(3.8rem, 16vw, 5rem);
+  --input-font: clamp(1.5rem, 6.4vw, 2.2rem);
+  --message-font: clamp(0.75rem, 3.2vw, 1rem);
+  --header-title: clamp(1.2rem, 5.2vw, 1.6rem);
+  --meta-label: clamp(0.55rem, 2.4vw, 0.7rem);
+  --meta-value: clamp(0.8rem, 3.2vw, 1.1rem);
+  --overlay-title: clamp(1.1rem, 4.6vw, 1.4rem);
+  --input-spacing: clamp(0.1rem, 0.8vw, 0.2rem);
+  --title-spacing: clamp(0.12rem, 0.8vw, 0.2rem);
+  --subtitle-spacing: clamp(0.2rem, 1vw, 0.32rem);
+  --meta-spacing: clamp(0.08rem, 0.4vw, 0.15rem);
+  --button-spacing: clamp(0.12rem, 0.8vw, 0.22rem);
+  --hint-font: clamp(0.6rem, 2.6vw, 0.75rem);
+  --focus-ring: clamp(0.12rem, 0.5vw, 0.2rem);
+  --shadow-lift: clamp(0.28rem, 1.6vw, 0.45rem);
+  --shadow-rise: clamp(0.18rem, 1.2vw, 0.3rem);
+  --press-depth: clamp(0.08rem, 0.6vw, 0.12rem);
+  --press-shadow: clamp(0.08rem, 0.6vw, 0.12rem);
+  --border-thick: clamp(0.14rem, 0.7vw, 0.2rem);
+  --border-thin: clamp(0.1rem, 0.5vw, 0.16rem);
+  --message-height: clamp(3.2rem, 10vw, 4rem);
+  --life-height: clamp(0.6rem, 2vw, 0.8rem);
+  --action-height: clamp(2.6rem, 9vw, 3.2rem);
 }
 
 *,
@@ -41,29 +60,39 @@
   box-sizing: border-box;
 }
 
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 100%;
   font-family: var(--font-main);
   color: var(--ink);
   background-color: var(--bg-deep);
   background-image:
     radial-gradient(circle at 20% 10%, #203750 0%, transparent 55%),
     radial-gradient(circle at 80% 20%, #1a2e43 0%, transparent 60%),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: auto, auto, 14px 14px, 14px 14px;
+    linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0.08rem, transparent 0.08rem),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0.08rem, transparent 0.08rem);
+  background-size: auto, auto, 0.9rem 0.9rem, 0.9rem 0.9rem;
   display: flex;
   justify-content: center;
   align-items: stretch;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
 }
 
 #root {
-  width: min(100%, var(--phone-width));
-  min-height: 100vh;
-  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: calc(var(--page-padding) + env(safe-area-inset-top))
+    calc(var(--page-padding) + env(safe-area-inset-right))
+    calc(var(--page-padding) + env(safe-area-inset-bottom))
+    calc(var(--page-padding) + env(safe-area-inset-left));
 }
 
 a {
@@ -98,8 +127,8 @@ input {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: 0.12rem solid var(--accent);
+  outline-offset: 0.12rem;
 }
 
 ::selection {
@@ -107,36 +136,25 @@ input {
   color: #0b0f1a;
 }
 
-@media (max-width: 360px) {
+@media (min-width: 37.5rem) {
   :root {
-    --page-padding: 14px;
-    --gap-lg: 16px;
-    --gap-md: 10px;
-    --tile-size: 40px;
-    --tile-gap: 6px;
-    --tile-font: 24px;
-    --key-height: 40px;
-    --key-font: 16px;
-    --input-height: 48px;
-    --input-width: 72px;
-    --input-font: 26px;
-    --message-font: 13px;
-    --header-title: 20px;
+    --container-max: 30rem;
+    --page-padding: clamp(1.2rem, 4vw, 1.8rem);
+    --tile-size: clamp(2.7rem, 9vw, 3.6rem);
+    --key-height: clamp(2.8rem, 8vw, 3.4rem);
+    --input-height: clamp(3rem, 8vw, 3.6rem);
   }
 }
 
-@media (min-width: 480px) and (pointer: coarse) {
+@media (min-width: 64rem) {
   :root {
-    --phone-width: 430px;
+    --page-padding: clamp(1.5rem, 2vw, 2.2rem);
+    --gap-xl: clamp(1.4rem, 2.4vw, 2rem);
   }
 }
 
 @supports (height: 100dvh) {
   body {
-    min-height: 100dvh;
-  }
-
-  #root {
     min-height: 100dvh;
   }
 }
