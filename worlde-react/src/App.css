@@ -18,13 +18,10 @@
 }
 
 .credit {
-  position: fixed;
-  left: calc(var(--page-padding) + env(safe-area-inset-left));
-  bottom: calc(var(--page-padding) + env(safe-area-inset-bottom));
+  padding: 0 var(--gap-md) var(--gap-md);
   font-size: var(--hint-font);
   color: var(--ink-dim);
   letter-spacing: var(--meta-spacing);
-  z-index: 2;
 }
 
 .header {

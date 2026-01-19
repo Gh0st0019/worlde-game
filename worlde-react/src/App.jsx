@@ -180,7 +180,6 @@ function App() {
         <header className="header">
           <div className="header__badge">
             <span className="header__title">Worlde</span>
-            <span className="header__subtitle">Pixel Italiano</span>
           </div>
           <div className="header__meta">
             <div className="meta">
@@ -297,6 +296,9 @@ function App() {
             </div>
           </section>
         </main>
+        <footer className="credit">
+          Made with <span role="img" aria-label="heart">❤️</span> by Ch3rry
+        </footer>
 
         {gameState !== 'playing' && (
           <div className="overlay" role="status" aria-live="polite">
@@ -312,9 +314,6 @@ function App() {
           </div>
         )}
       </div>
-      <footer className="credit">
-        Made with <span role="img" aria-label="heart">❤️</span> by Ch3rry
-      </footer>
     </div>
   )
 }
