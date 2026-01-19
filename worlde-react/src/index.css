@@ -57,6 +57,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: stretch;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #root {
@@ -107,6 +109,26 @@ input {
 ::selection {
   background: var(--accent-3);
   color: #0b0f1a;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --page-padding: clamp(12px, 4vw, 18px);
+    --gap-lg: clamp(16px, 4vw, 22px);
+    --gap-md: clamp(10px, 3vw, 16px);
+    --gap-sm: clamp(8px, 2.8vw, 12px);
+    --cabinet-padding: clamp(14px, 4vw, 20px);
+    --frame-padding: clamp(14px, 4vw, 20px);
+    --tile-min: clamp(36px, 12vw, 52px);
+    --tile-font: clamp(22px, 6vw, 32px);
+    --tile-spacing: clamp(2px, 1vw, 4px);
+    --key-min: clamp(34px, 11vw, 44px);
+    --key-font: clamp(16px, 5vw, 20px);
+    --key-pad: clamp(10px, 3vw, 14px);
+    --input-height: clamp(56px, 13vw, 66px);
+    --input-width: clamp(76px, 20vw, 92px);
+    --input-font: clamp(24px, 7vw, 34px);
+  }
 }
 
 @supports (height: 100dvh) {

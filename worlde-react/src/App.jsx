@@ -140,7 +140,17 @@ function App() {
   const wordLength = word.length
 
   return (
-    <div className={`app app--${gameState}`}>
+    <div className="app-shell">
+      <div className="device-guard" role="status" aria-live="polite">
+        <div className="device-guard__panel">
+          <div className="device-guard__title">Solo mobile</div>
+          <p className="device-guard__text">
+            Questa app è pensata per telefoni e tablet. Aprila da un dispositivo mobile.
+          </p>
+        </div>
+      </div>
+
+      <div className={`app app--${gameState}`}>
       <header className="header">
         <div className="header__badge">
           <span className="header__title">Worlde</span>
@@ -259,6 +269,7 @@ function App() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
