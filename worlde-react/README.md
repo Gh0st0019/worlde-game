@@ -1,6 +1,10 @@
 # Worlde Pixel Italiano
 
-Gioco in stile pixel basato sulla logica di `worlde.py`: indovina la parola italiana lettera per lettera con 6 tentativi.
+Gioco in stile pixel basato sulla logica di `worlde.py`: indovina la parola italiana lettera per lettera con 10 tentativi.
+
+## Live
+
+Dopo il primo deploy: https://gh0st0019.github.io/worlde-game/
 
 ## Avvio
 
