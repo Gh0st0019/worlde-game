@@ -1,6 +1,6 @@
 .app {
   display: grid;
-  gap: 24px;
+  gap: var(--gap-lg);
   position: relative;
 }
 
@@ -8,8 +8,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  padding: 16px 20px;
+  gap: var(--gap-md);
+  padding: var(--gap-md);
   background: var(--panel);
   border: 4px solid var(--border);
   box-shadow: 0 8px 0 var(--shadow);
@@ -18,7 +18,7 @@
 .header__badge {
   display: grid;
   gap: 6px;
-  padding: 12px 16px;
+  padding: var(--gap-sm) var(--gap-md);
   border: 4px solid var(--accent);
   background: linear-gradient(135deg, #1c2a3f 0%, #131c2c 100%);
   box-shadow: 0 6px 0 #060a12;
@@ -27,12 +27,12 @@
 }
 
 .header__title {
-  font-size: 28px;
+  font-size: var(--header-title);
   letter-spacing: 3px;
 }
 
 .header__subtitle {
-  font-size: 11px;
+  font-size: clamp(10px, 2.6vw, 12px);
   font-family: var(--font-alt);
   color: var(--ink-dim);
   letter-spacing: 2px;
@@ -40,34 +40,35 @@
 
 .header__meta {
   display: flex;
-  gap: 12px;
+  gap: var(--gap-sm);
   flex-wrap: wrap;
 }
 
 .meta {
   display: grid;
   gap: 6px;
-  padding: 8px 12px;
+  padding: var(--gap-sm);
   border: 2px solid var(--border);
   background: #0c1322;
   min-width: 140px;
+  flex: 1 1 140px;
 }
 
 .meta__label {
-  font-size: 11px;
+  font-size: var(--meta-label);
   color: var(--ink-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .meta__value {
-  font-size: 16px;
+  font-size: var(--meta-value);
 }
 
 .cabinet {
   display: grid;
-  gap: 24px;
-  padding: 24px;
+  gap: var(--gap-lg);
+  padding: var(--cabinet-padding);
   background: #0e1625;
   border: 6px solid #2a3a54;
   box-shadow: 0 12px 0 var(--shadow);
@@ -75,7 +76,7 @@
 }
 
 .screen {
-  padding: 16px;
+  padding: var(--gap-sm);
   background: #0b1322;
   border: 4px solid var(--border);
   box-shadow: inset 0 0 0 2px #0a0f1c;
@@ -83,7 +84,7 @@
 
 .screen__frame {
   position: relative;
-  padding: 22px;
+  padding: var(--frame-padding);
   background: #0c172a;
   border: 3px solid #24344b;
   overflow: hidden;
@@ -109,13 +110,13 @@
 }
 
 .board {
-  --tile-min: 44px;
+  --tile-min: var(--tile-min);
   display: grid;
   grid-template-columns: repeat(var(--word-length), minmax(var(--tile-min), 1fr));
-  gap: 14px;
+  gap: var(--gap-md);
   justify-content: center;
   align-items: center;
-  margin: 10px 0 16px;
+  margin: var(--gap-sm) 0 var(--gap-md);
   position: relative;
   z-index: 1;
 }
@@ -127,8 +128,8 @@
   border: 3px solid var(--border);
   background: #111b2d;
   box-shadow: inset 0 0 0 2px #0a111f, 0 4px 0 #05070c;
-  font-size: clamp(20px, 4.4vw, 28px);
-  letter-spacing: 4px;
+  font-size: var(--tile-font);
+  letter-spacing: var(--tile-spacing);
   text-transform: uppercase;
 }
 
@@ -149,16 +150,16 @@
 
 .attempts {
   display: flex;
-  gap: 8px;
+  gap: var(--gap-sm);
   justify-content: center;
   flex-wrap: wrap;
-  max-width: 280px;
-  margin: 10px 0 6px;
+  max-width: min(320px, 100%);
+  margin: var(--gap-sm) 0 6px;
 }
 
 .life {
-  width: 20px;
-  height: 12px;
+  width: clamp(18px, 4.2vw, 22px);
+  height: clamp(10px, 2.4vw, 12px);
   border: 2px solid var(--border);
   background: #1b2436;
   box-shadow: 0 3px 0 #05070c;
@@ -171,11 +172,11 @@
 
 .message {
   margin-top: 12px;
-  padding: 12px 14px;
+  padding: var(--gap-sm);
   border: 2px solid var(--border);
   background: #0c1423;
-  font-size: 14px;
-  min-height: 52px;
+  font-size: var(--message-font);
+  min-height: clamp(48px, 11vw, 58px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -196,20 +197,20 @@
 
 .controls {
   display: grid;
-  gap: 18px;
+  gap: var(--gap-lg);
 }
 
 .guess {
   display: grid;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--gap-sm);
+  padding: var(--gap-md);
   border: 3px solid var(--border);
   background: #0c1423;
   box-shadow: 0 6px 0 var(--shadow);
 }
 
 .guess__label {
-  font-size: 12px;
+  font-size: var(--meta-label);
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--ink-dim);
@@ -217,18 +218,18 @@
 
 .guess__row {
   display: flex;
-  gap: 12px;
+  gap: var(--gap-sm);
   align-items: center;
 }
 
 .guess__input {
-  width: 80px;
-  height: 60px;
+  width: var(--input-width);
+  height: var(--input-height);
   border: 3px solid var(--border);
   background: #121b2d;
   text-align: center;
-  font-size: 28px;
-  letter-spacing: 3px;
+  font-size: var(--input-font);
+  letter-spacing: clamp(2px, 0.8vw, 4px);
   text-transform: uppercase;
   color: var(--ink);
   box-shadow: inset 0 0 0 2px #0a111f, 0 4px 0 #05070c;
@@ -241,8 +242,8 @@
 }
 
 .guess__button {
-  min-width: 120px;
-  height: 60px;
+  min-width: min(160px, 45vw);
+  height: var(--input-height);
   border: 3px solid #3a4d6b;
   background: linear-gradient(180deg, #273c58 0%, #1a2b44 100%);
   color: var(--ink);
@@ -257,22 +258,25 @@
 }
 
 .guess__hint {
-  font-size: 11px;
+  font-size: clamp(10px, 2.6vw, 12px);
   color: var(--ink-dim);
 }
 
 .keyboard {
   display: grid;
-  grid-template-columns: repeat(13, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(var(--key-min), 1fr));
+  gap: var(--gap-sm);
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .key {
-  padding: 12px 0;
+  padding: var(--key-pad) 0;
   border: 2px solid var(--border);
   background: #1a2a40;
   text-transform: uppercase;
-  font-size: 14px;
+  font-size: var(--key-font);
   box-shadow: 0 3px 0 #05070c;
 }
 
@@ -337,13 +341,13 @@
 }
 
 .overlay__title {
-  font-size: 20px;
+  font-size: clamp(18px, 4.8vw, 24px);
   text-transform: uppercase;
   letter-spacing: 2px;
 }
 
 .overlay__text {
-  font-size: 13px;
+  font-size: clamp(12px, 3.2vw, 14px);
   color: var(--ink-dim);
 }
 
@@ -395,14 +399,13 @@
   }
 
   .cabinet {
-    padding: 18px;
+    padding: var(--gap-md);
   }
 }
 
 @media (max-width: 700px) {
   .board {
-    --tile-min: 32px;
-    gap: 8px;
+    gap: var(--gap-sm);
   }
 
   .guess__row {
@@ -415,8 +418,35 @@
   }
 
   .keyboard {
-    grid-template-columns: repeat(9, minmax(0, 1fr));
-    gap: 6px;
+    gap: var(--gap-sm);
+  }
+}
+
+@media (max-width: 520px) {
+  .header {
+    padding: var(--gap-sm);
+  }
+
+  .header__meta {
+    width: 100%;
+  }
+
+  .meta {
+    flex: 1 1 45%;
+  }
+
+  .screen__frame {
+    padding: var(--gap-md);
+  }
+}
+
+@media (max-height: 720px) {
+  .cabinet {
+    gap: var(--gap-md);
+  }
+
+  .screen__frame {
+    padding: var(--gap-md);
   }
 }
 

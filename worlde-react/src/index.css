@@ -14,6 +14,25 @@
   --accent: #f3c969;
   --accent-2: #4ddbb0;
   --accent-3: #f26b7a;
+  --page-padding: clamp(14px, 3vw, 32px);
+  --gap-lg: clamp(18px, 3.6vw, 26px);
+  --gap-md: clamp(12px, 2.6vw, 18px);
+  --gap-sm: clamp(8px, 2vw, 14px);
+  --cabinet-padding: clamp(16px, 3.2vw, 24px);
+  --frame-padding: clamp(16px, 3vw, 22px);
+  --tile-min: clamp(34px, 11vw, 60px);
+  --tile-font: clamp(20px, 4.8vw, 30px);
+  --tile-spacing: clamp(2px, 0.9vw, 4px);
+  --key-min: clamp(32px, 8vw, 46px);
+  --key-font: clamp(16px, 4.2vw, 20px);
+  --key-pad: clamp(10px, 2.6vw, 14px);
+  --input-height: clamp(54px, 10vw, 66px);
+  --input-width: clamp(76px, 16vw, 92px);
+  --input-font: clamp(24px, 6.2vw, 34px);
+  --message-font: clamp(12px, 3.2vw, 15px);
+  --header-title: clamp(22px, 5vw, 30px);
+  --meta-label: clamp(10px, 2.6vw, 12px);
+  --meta-value: clamp(14px, 3.4vw, 18px);
 }
 
 *,
@@ -42,7 +61,11 @@ body {
 
 #root {
   width: min(1100px, 100%);
-  padding: 24px;
+  min-height: 100%;
+  padding: calc(var(--page-padding) + env(safe-area-inset-top))
+    calc(var(--page-padding) + env(safe-area-inset-right))
+    calc(var(--page-padding) + env(safe-area-inset-bottom))
+    calc(var(--page-padding) + env(safe-area-inset-left));
 }
 
 a {
@@ -60,6 +83,7 @@ button {
   border: none;
   background: none;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 button:disabled,
@@ -72,6 +96,7 @@ input {
   border: none;
   outline: none;
   background: none;
+  touch-action: manipulation;
 }
 
 :focus-visible {
@@ -82,4 +107,10 @@ input {
 ::selection {
   background: var(--accent-3);
   color: #0b0f1a;
+}
+
+@supports (height: 100dvh) {
+  body {
+    min-height: 100dvh;
+  }
 }
