@@ -1,25 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-
 :root {
-  --font-main: "Press Start 2P", "VT323", "Courier New", monospace;
-  --font-alt: "VT323", "Press Start 2P", "Courier New", monospace;
-  --bg-deep: #0b0f1a;
-  --bg-mid: #152235;
-  --bg-bright: #223b52;
-  --panel: #0f1626;
-  --card: #0e1729;
-  --border: #29354d;
-  --shadow: #05070c;
-  --ink: #f4f1de;
-  --ink-dim: #a3acc0;
-  --accent: #f3c969;
-  --accent-2: #4ddbb0;
-  --accent-3: #f26b7a;
-  --glow: rgba(243, 201, 105, 0.25);
-  --glow-cool: rgba(77, 219, 176, 0.18);
+  --font-main: "MS Gothic", "MS PGothic", "Lucida Console", "Monaco", "Consolas",
+    "Courier New", monospace;
+  --font-alt: "MS Gothic", "MS PGothic", "Lucida Console", "Monaco", "Consolas",
+    "Courier New", monospace;
+  --bg-deep: #f6efe4;
+  --bg-mid: #f1e1c8;
+  --bg-bright: #f8ead2;
+  --panel: #f4e0c1;
+  --panel-deep: #ecd3b1;
+  --card: #f9f1df;
+  --card-deep: #f0ddb9;
+  --border: #c9aa83;
+  --shadow: #b08a61;
+  --ink: #4f3b2b;
+  --ink-dim: #7c634d;
+  --ink-soft: #a38972;
+  --accent: #e7a86a;
+  --accent-2: #9dcaa5;
+  --accent-3: #d98b8b;
+  --glow: rgba(231, 168, 106, 0.28);
+  --glow-cool: rgba(157, 202, 165, 0.22);
+  --tile-base: #f6e8cf;
+  --tile-fill: #f2d2a2;
+  --tile-border: #c79b6d;
+  --key-base: #f2e0c2;
+  --key-muted: #e0c8a6;
+  --button-base: #f4d3a5;
+  --button-deep: #e8b983;
+  --overlay: rgba(78, 58, 38, 0.35);
   --pixel-unit: clamp(0.12rem, 0.4vw, 0.18rem);
-  --decor-opacity: 0.6;
-  --container-max: 22.5rem;
+  --decor-opacity: 0.45;
+  --container-max: 23rem;
   --page-padding: clamp(1rem, 4vw, 1.5rem);
   --gap-xl: clamp(1.2rem, 5vw, 1.8rem);
   --gap-lg: clamp(1rem, 4vw, 1.5rem);
@@ -40,17 +51,17 @@
   --meta-label: clamp(0.55rem, 2.4vw, 0.7rem);
   --meta-value: clamp(0.8rem, 3.2vw, 1.1rem);
   --overlay-title: clamp(1.1rem, 4.6vw, 1.4rem);
-  --input-spacing: clamp(0.1rem, 0.8vw, 0.2rem);
-  --title-spacing: clamp(0.12rem, 0.8vw, 0.2rem);
-  --subtitle-spacing: clamp(0.2rem, 1vw, 0.32rem);
-  --meta-spacing: clamp(0.08rem, 0.4vw, 0.15rem);
-  --button-spacing: clamp(0.12rem, 0.8vw, 0.22rem);
+  --input-spacing: clamp(0.06rem, 0.5vw, 0.14rem);
+  --title-spacing: clamp(0.04rem, 0.4vw, 0.1rem);
+  --subtitle-spacing: clamp(0.08rem, 0.5vw, 0.16rem);
+  --meta-spacing: clamp(0.04rem, 0.3vw, 0.08rem);
+  --button-spacing: clamp(0.04rem, 0.4vw, 0.12rem);
   --hint-font: clamp(0.6rem, 2.6vw, 0.75rem);
   --focus-ring: clamp(0.12rem, 0.5vw, 0.2rem);
-  --shadow-lift: clamp(0.28rem, 1.6vw, 0.45rem);
-  --shadow-rise: clamp(0.18rem, 1.2vw, 0.3rem);
-  --press-depth: clamp(0.08rem, 0.6vw, 0.12rem);
-  --press-shadow: clamp(0.08rem, 0.6vw, 0.12rem);
+  --shadow-lift: clamp(0.2rem, 1.2vw, 0.35rem);
+  --shadow-rise: clamp(0.14rem, 0.9vw, 0.24rem);
+  --press-depth: clamp(0.06rem, 0.5vw, 0.1rem);
+  --press-shadow: clamp(0.06rem, 0.5vw, 0.1rem);
   --border-thick: clamp(0.14rem, 0.7vw, 0.2rem);
   --border-thin: clamp(0.1rem, 0.5vw, 0.16rem);
   --message-height: clamp(3.2rem, 10vw, 4rem);
@@ -76,13 +87,12 @@ body {
   color: var(--ink);
   background-color: var(--bg-deep);
   background-image:
-    radial-gradient(circle at 20% 10%, #203750 0%, transparent 55%),
-    radial-gradient(circle at 80% 20%, #1a2e43 0%, transparent 60%),
-    radial-gradient(circle at 30% 80%, var(--glow) 0%, transparent 45%),
-    radial-gradient(circle at 80% 75%, var(--glow-cool) 0%, transparent 50%),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0.08rem, transparent 0.08rem),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0.08rem, transparent 0.08rem);
-  background-size: auto, auto, auto, auto, 0.9rem 0.9rem, 0.9rem 0.9rem;
+    radial-gradient(circle at 15% 10%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.45) 0%, transparent 60%),
+    radial-gradient(circle at 30% 80%, var(--glow) 0%, transparent 50%),
+    radial-gradient(circle at 75% 85%, var(--glow-cool) 0%, transparent 50%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.22) 0 0.15rem, transparent 0.15rem 0.6rem),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 0.15rem, transparent 0.15rem 0.6rem);
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -139,7 +149,7 @@ input {
 
 ::selection {
   background: var(--accent-3);
-  color: #0b0f1a;
+  color: var(--bg-deep);
 }
 
 @media (min-width: 37.5rem) {
