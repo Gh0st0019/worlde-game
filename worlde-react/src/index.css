@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --font-main: "MS Gothic", "MS PGothic", "Lucida Console", "Monaco", "Consolas",
     "Courier New", monospace;
   --font-alt: "MS Gothic", "MS PGothic", "Lucida Console", "Monaco", "Consolas",
@@ -18,6 +19,13 @@
   --accent: #e7a86a;
   --accent-2: #9dcaa5;
   --accent-3: #d98b8b;
+  --accent-2-border: #6e9f86;
+  --muted-border: #c8a77f;
+  --win-glow: rgba(157, 202, 165, 0.35);
+  --lose-glow: rgba(217, 139, 139, 0.35);
+  --bg-highlight-1: 255 255 255;
+  --bg-highlight-2: 255 255 255;
+  --bg-grid: 255 255 255;
   --glow: rgba(231, 168, 106, 0.28);
   --glow-cool: rgba(157, 202, 165, 0.22);
   --tile-base: #f6e8cf;
@@ -28,8 +36,6 @@
   --button-base: #f4d3a5;
   --button-deep: #e8b983;
   --overlay: rgba(78, 58, 38, 0.35);
-  --pixel-unit: clamp(0.12rem, 0.4vw, 0.18rem);
-  --decor-opacity: 0.45;
   --container-max: 23rem;
   --page-padding: clamp(1rem, 4vw, 1.5rem);
   --gap-xl: clamp(1.2rem, 5vw, 1.8rem);
@@ -69,6 +75,42 @@
   --action-height: clamp(2.6rem, 9vw, 3.2rem);
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-deep: #0b0f12;
+  --bg-mid: #121a21;
+  --bg-bright: #1a242c;
+  --panel: #141e25;
+  --panel-deep: #0f171d;
+  --card: #162129;
+  --card-deep: #10181f;
+  --border: #2a3946;
+  --shadow: #060a0f;
+  --ink: #f2e8d6;
+  --ink-dim: #c0b09a;
+  --ink-soft: #9b8c77;
+  --accent: #e3a86a;
+  --accent-2: #8fc4a3;
+  --accent-3: #d88f92;
+  --accent-2-border: #6a9a7e;
+  --muted-border: #3b4b5b;
+  --win-glow: rgba(143, 196, 163, 0.28);
+  --lose-glow: rgba(216, 143, 146, 0.28);
+  --bg-highlight-1: 236 226 210;
+  --bg-highlight-2: 218 206 188;
+  --bg-grid: 255 255 255;
+  --glow: rgba(227, 168, 106, 0.2);
+  --glow-cool: rgba(143, 196, 163, 0.18);
+  --tile-base: #1b2630;
+  --tile-fill: #23303a;
+  --tile-border: #31424f;
+  --key-base: #1a2731;
+  --key-muted: #22313d;
+  --button-base: #2a3a46;
+  --button-deep: #23313b;
+  --overlay: rgba(7, 10, 13, 0.7);
+}
+
 *,
 *::before,
 *::after {
@@ -87,12 +129,28 @@ body {
   color: var(--ink);
   background-color: var(--bg-deep);
   background-image:
-    radial-gradient(circle at 15% 10%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
-    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.45) 0%, transparent 60%),
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(var(--bg-highlight-1), 0.7) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 85% 20%,
+      rgba(var(--bg-highlight-2), 0.45) 0%,
+      transparent 60%
+    ),
     radial-gradient(circle at 30% 80%, var(--glow) 0%, transparent 50%),
     radial-gradient(circle at 75% 85%, var(--glow-cool) 0%, transparent 50%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.22) 0 0.15rem, transparent 0.15rem 0.6rem),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 0.15rem, transparent 0.15rem 0.6rem);
+    repeating-linear-gradient(
+      0deg,
+      rgba(var(--bg-grid), 0.22) 0 0.15rem,
+      transparent 0.15rem 0.6rem
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(var(--bg-grid), 0.18) 0 0.15rem,
+      transparent 0.15rem 0.6rem
+    );
   display: flex;
   justify-content: center;
   align-items: stretch;

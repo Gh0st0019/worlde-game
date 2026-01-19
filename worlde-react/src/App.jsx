@@ -14,6 +14,20 @@ const getStoredLevel = () => {
   return Number.isFinite(stored) && stored > 0 ? stored : 1
 }
 
+const getStoredTheme = () => {
+  if (typeof window === 'undefined') {
+    return 'light'
+  }
+  const stored = window.localStorage.getItem('worldeTheme')
+  if (stored === 'dark' || stored === 'light') {
+    return stored
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark'
+  }
+  return 'light'
+}
+
 const getMinLengthForLevel = (level) => Math.min(6, 4 + Math.floor((level - 1) / 2))
 
 const pickRandomWord = (level) => {
@@ -32,6 +46,7 @@ function App() {
   const [gameState, setGameState] = useState('playing')
   const [letterStatus, setLetterStatus] = useState({})
   const [level, setLevel] = useState(getStoredLevel)
+  const [theme, setTheme] = useState(getStoredTheme)
   const levelRef = useRef(level)
 
   useEffect(() => {
@@ -40,6 +55,22 @@ function App() {
       window.localStorage.setItem('worldeLevel', String(level))
     }
   }, [level])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return
+    }
+    const root = document.documentElement
+    root.dataset.theme = theme
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('worldeTheme', theme)
+    }
+    const themeColor = theme === 'dark' ? '#0b0f12' : '#f6efe4'
+    const metaTheme = document.querySelector('meta[name="theme-color"]')
+    if (metaTheme) {
+      metaTheme.setAttribute('content', themeColor)
+    }
+  }, [theme])
 
   const startNewGame = useCallback(() => {
     const nextWord = pickRandomWord(levelRef.current)
@@ -137,17 +168,14 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeydown)
   }, [applyGuess, gameState])
 
+  const toggleTheme = () => {
+    setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
+  }
+
   const wordLength = word.length
 
   return (
     <div className="app-shell">
-      <div className="pixel-decor" aria-hidden="true">
-        <span className="sprite sprite--ghost sprite--left" />
-        <span className="sprite sprite--cat sprite--right" />
-        <span className="sparkle sparkle--top" />
-        <span className="sparkle sparkle--bottom" />
-      </div>
-
       <div className={`app app--${gameState}`}>
         <header className="header">
           <div className="header__badge">
@@ -169,6 +197,14 @@ function App() {
                 {attemptsLeft}/{MAX_ATTEMPTS}
               </span>
             </div>
+          </div>
+          <div className="header__actions">
+            <button className="theme-toggle" type="button" onClick={toggleTheme}>
+              <span className="theme-toggle__label">Tema</span>
+              <span className="theme-toggle__value">
+                {theme === 'dark' ? 'Scuro' : 'Chiaro'}
+              </span>
+            </button>
           </div>
         </header>
 
