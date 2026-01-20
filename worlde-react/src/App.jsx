@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { supabase, supabaseReady } from './lib/supabaseClient'
 import { WORD_BANK } from './data/wordBank'
 import './App.css'
 
@@ -74,15 +75,24 @@ function App() {
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS)
   const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const [coins, setCoins] = useState(getStoredCoins)
+  const [recentWords, setRecentWords] = useState(getStoredRecentWords)
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
   const [inputValue, setInputValue] = useState('')
   const [gameState, setGameState] = useState('playing')
   const [showStart, setShowStart] = useState(true)
+  const [authReady, setAuthReady] = useState(false)
+  const [authUser, setAuthUser] = useState(null)
+  const [profileLoaded, setProfileLoaded] = useState(false)
+  const [authBusy, setAuthBusy] = useState(false)
+  const [authError, setAuthError] = useState('')
   const [letterStatus, setLetterStatus] = useState({})
   const [level, setLevel] = useState(getStoredLevel)
   const [theme, setTheme] = useState(getStoredTheme)
   const levelRef = useRef(level)
   const maxAttemptsRef = useRef(maxAttempts)
+  const coinsRef = useRef(coins)
+  const themeRef = useRef(theme)
+  const recentWordsRef = useRef(recentWords)
 
   useEffect(() => {
     levelRef.current = level
@@ -95,6 +105,7 @@ function App() {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('worldeCoins', String(coins))
     }
+    coinsRef.current = coins
   }, [coins])
 
   useEffect(() => {
@@ -102,11 +113,17 @@ function App() {
   }, [maxAttempts])
 
   useEffect(() => {
+    recentWordsRef.current = recentWords
+    storeRecentWords(recentWords)
+  }, [recentWords])
+
+  useEffect(() => {
     if (typeof document === 'undefined') {
       return
     }
     const root = document.documentElement
     root.dataset.theme = theme
+    themeRef.current = theme
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('worldeTheme', theme)
     }
@@ -117,10 +134,137 @@ function App() {
     }
   }, [theme])
 
+  useEffect(() => {
+    if (!supabaseReady || !supabase) {
+      setAuthReady(true)
+      return undefined
+    }
+    let isMounted = true
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) {
+        return
+      }
+      setAuthUser(data.session?.user ?? null)
+      setAuthReady(true)
+    })
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) {
+        return
+      }
+      setAuthUser(session?.user ?? null)
+      setAuthReady(true)
+    })
+    return () => {
+      isMounted = false
+      data?.subscription?.unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!supabaseReady || !supabase) {
+      return
+    }
+    if (!authUser) {
+      setProfileLoaded(false)
+      setWord('')
+      setGuessedWord([])
+      setAttemptsLeft(MAX_ATTEMPTS)
+      setMessage('Inserisci una lettera per iniziare.')
+      setInputValue('')
+      setGameState('playing')
+      setLetterStatus({})
+      return
+    }
+    let cancelled = false
+    const loadProfile = async () => {
+      setAuthError('')
+      setProfileLoaded(false)
+      const { data, error } = await supabase
+        .from('player_profiles')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single()
+
+      if (cancelled) {
+        return
+      }
+
+      if (error && error.code !== 'PGRST116') {
+        setAuthError('Impossibile caricare i dati dal server.')
+        setProfileLoaded(true)
+        return
+      }
+
+      if (!data) {
+        const insertPayload = {
+          user_id: authUser.id,
+          level: levelRef.current,
+          coins: coinsRef.current,
+          max_attempts: maxAttemptsRef.current,
+          recent_words: recentWordsRef.current,
+          theme: themeRef.current,
+          last_active_at: new Date().toISOString(),
+        }
+        const { error: insertError } = await supabase.from('player_profiles').insert(insertPayload)
+        if (insertError) {
+          setAuthError('Impossibile creare il profilo giocatore.')
+        }
+        setProfileLoaded(true)
+        return
+      }
+
+      setLevel(typeof data.level === 'number' ? data.level : 1)
+      setCoins(typeof data.coins === 'number' ? data.coins : 0)
+      const nextMaxAttempts =
+        typeof data.max_attempts === 'number' ? data.max_attempts : MAX_ATTEMPTS
+      setMaxAttempts(nextMaxAttempts)
+      maxAttemptsRef.current = nextMaxAttempts
+      const nextTheme = data.theme === 'dark' ? 'dark' : 'light'
+      setTheme(nextTheme)
+      const nextRecent = Array.isArray(data.recent_words)
+        ? data.recent_words.filter((word) => typeof word === 'string')
+        : []
+      setRecentWords(nextRecent)
+      setProfileLoaded(true)
+    }
+
+    loadProfile()
+    return () => {
+      cancelled = true
+    }
+  }, [authUser, supabaseReady])
+
+  const saveProfile = useCallback(async () => {
+    if (!supabaseReady || !supabase || !authUser) {
+      return
+    }
+    const payload = {
+      user_id: authUser.id,
+      level,
+      coins,
+      max_attempts: maxAttempts,
+      recent_words: recentWords,
+      theme,
+      last_active_at: new Date().toISOString(),
+    }
+    await supabase.from('player_profiles').upsert(payload, { onConflict: 'user_id' })
+  }, [authUser, coins, level, maxAttempts, recentWords, theme])
+
+  useEffect(() => {
+    if (!authUser || !profileLoaded) {
+      return undefined
+    }
+    const timer = window.setTimeout(() => {
+      saveProfile()
+    }, 600)
+    return () => window.clearTimeout(timer)
+  }, [authUser, profileLoaded, coins, level, maxAttempts, recentWords, theme, saveProfile])
+
   const startNewGame = useCallback(() => {
-    const recentWords = getStoredRecentWords()
-    const nextWord = pickRandomWord(levelRef.current, recentWords)
-    storeRecentWords([nextWord, ...recentWords.filter((word) => word !== nextWord)])
+    const currentRecent = recentWordsRef.current
+    const nextWord = pickRandomWord(levelRef.current, currentRecent)
+    const nextRecent = [nextWord, ...currentRecent.filter((word) => word !== nextWord)]
+    setRecentWords(nextRecent)
     setWord(nextWord)
     setGuessedWord(Array(nextWord.length).fill('_'))
     setAttemptsLeft(maxAttemptsRef.current)
@@ -139,14 +283,14 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!showStart) {
+    if (!showStart && authUser && profileLoaded && !word) {
       startNewGame()
     }
-  }, [showStart, startNewGame])
+  }, [showStart, authUser, profileLoaded, startNewGame, word])
 
   const applyGuess = useCallback(
     (rawLetter) => {
-      if (showStart || gameState !== 'playing') {
+      if (showStart || !authUser || !profileLoaded || gameState !== 'playing') {
         return
       }
 
@@ -208,7 +352,7 @@ function App() {
         setMessage(`Lettera errata! Tentativi rimasti: ${nextAttempts}`)
       }
     },
-    [attemptsLeft, gameState, guessedWord, level, maxAttempts, showStart, word]
+    [attemptsLeft, authUser, gameState, guessedWord, level, maxAttempts, profileLoaded, showStart, word]
   )
 
   const handleSubmit = (event) => {
@@ -229,7 +373,7 @@ function App() {
 
   useEffect(() => {
     const handleKeydown = (event) => {
-      if (showStart || gameState !== 'playing') {
+      if (showStart || !authUser || !profileLoaded || gameState !== 'playing') {
         return
       }
       if (event.target && event.target.tagName === 'INPUT') {
@@ -243,10 +387,46 @@ function App() {
 
     window.addEventListener('keydown', handleKeydown)
     return () => window.removeEventListener('keydown', handleKeydown)
-  }, [applyGuess, gameState, showStart])
+  }, [applyGuess, authUser, gameState, profileLoaded, showStart])
 
   const toggleTheme = () => {
     setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
+  }
+
+  const isAnonymous = authUser?.is_anonymous === true
+
+  const handleGuest = async () => {
+    if (!supabaseReady || !supabase || authBusy) {
+      return
+    }
+    setAuthError('')
+    setAuthBusy(true)
+    const { error } = await supabase.auth.signInAnonymously()
+    if (error) {
+      setAuthError('Accesso ospite non disponibile.')
+    }
+    setAuthBusy(false)
+  }
+
+  const handleGoogle = async () => {
+    if (!supabaseReady || !supabase || authBusy) {
+      return
+    }
+    setAuthError('')
+    setAuthBusy(true)
+    if (isAnonymous) {
+      const { error } = await supabase.auth.linkIdentity({ provider: 'google' })
+      if (error) {
+        setAuthError('Impossibile collegare Google.')
+      }
+      setAuthBusy(false)
+      return
+    }
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+    if (error) {
+      setAuthError('Accesso con Google non disponibile.')
+    }
+    setAuthBusy(false)
   }
 
   const wordLength = word.length
@@ -262,6 +442,79 @@ function App() {
               <div className="start-bar__fill" />
             </div>
             <div className="start-text">Caricamento...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!supabaseReady) {
+    return (
+      <div className="app-shell">
+        <div className="auth-screen" role="status" aria-live="polite">
+          <div className="auth-panel">
+            <div className="auth-title">Supabase non configurato</div>
+            <div className="auth-error">
+              Aggiungi VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!authReady) {
+    return (
+      <div className="app-shell">
+        <div className="start-screen" role="status" aria-live="polite">
+          <div className="start-panel">
+            <img className="start-gif" src="/earthspin.gif" alt="Pianeta che gira" />
+            <div className="start-bar" aria-hidden="true">
+              <div className="start-bar__fill" />
+            </div>
+            <div className="start-text">Connessione...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!authUser) {
+    return (
+      <div className="app-shell">
+        <div className="auth-screen" role="status" aria-live="polite">
+          <div className="auth-panel">
+            <div className="auth-title">Accedi</div>
+            <button
+              className="auth-button"
+              type="button"
+              onClick={handleGoogle}
+              disabled={authBusy}
+            >
+              <img className="auth-button__icon" src="/google.png" alt="" aria-hidden="true" />
+              <span>Accedi con Google</span>
+            </button>
+            <button
+              className="auth-link"
+              type="button"
+              onClick={handleGuest}
+              disabled={authBusy}
+            >
+              Continua come ospite
+            </button>
+            {authError && <div className="auth-error">{authError}</div>}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profileLoaded) {
+    return (
+      <div className="app-shell">
+        <div className="auth-screen" role="status" aria-live="polite">
+          <div className="auth-panel">
+            <div className="auth-title">Caricamento profilo...</div>
           </div>
         </div>
       </div>
@@ -298,6 +551,17 @@ function App() {
             </div>
           </div>
           <div className="header__actions">
+            {isAnonymous && (
+              <button
+                className="theme-toggle theme-toggle--wide"
+                type="button"
+                onClick={handleGoogle}
+                disabled={authBusy}
+              >
+                <span className="theme-toggle__label">Account</span>
+                <span className="theme-toggle__value">Collega Google</span>
+              </button>
+            )}
             <button className="theme-toggle" type="button" onClick={toggleTheme}>
               <span className="theme-toggle__label">Tema</span>
               <span className="theme-toggle__value">
