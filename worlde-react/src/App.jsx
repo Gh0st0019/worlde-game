@@ -422,11 +422,19 @@ function App() {
       setAuthBusy(false)
       return
     }
-    const redirectTo =
-      typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : undefined
+    const redirectTo = (() => {
+      if (typeof window === 'undefined') {
+        return 'https://worlde.online'
+      }
+      const origin = window.location.origin
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return 'https://worlde.online'
+      }
+      return `${origin}${window.location.pathname}`
+    })()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: redirectTo ? { redirectTo } : undefined,
+      options: { redirectTo },
     })
     if (error) {
       setAuthError('Accesso con Google non disponibile.')
