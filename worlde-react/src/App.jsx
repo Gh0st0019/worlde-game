@@ -422,7 +422,12 @@ function App() {
       setAuthBusy(false)
       return
     }
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+    const redirectTo =
+      typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : undefined
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: redirectTo ? { redirectTo } : undefined,
+    })
     if (error) {
       setAuthError('Accesso con Google non disponibile.')
     }
