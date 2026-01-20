@@ -5,7 +5,7 @@ import './App.css'
 
 const MAX_ATTEMPTS = 10
 const RECENT_WORDS_LIMIT = 30
-const START_DURATION_MS = 2400
+const START_DURATION_MS = 4200
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
 const getStoredLevel = () => {
@@ -44,6 +44,18 @@ const storeRecentWords = (words) => {
   window.localStorage.setItem('worldeRecentWords', JSON.stringify(trimmed))
 }
 
+const hasGoogleIdentity = (user) => {
+  if (!user) {
+    return false
+  }
+  if (user.app_metadata?.provider === 'google') {
+    return true
+  }
+  return Array.isArray(user.identities)
+    ? user.identities.some((identity) => identity.provider === 'google')
+    : false
+}
+
 const getStoredTheme = () => {
   if (typeof window === 'undefined') {
     return 'light'
@@ -76,6 +88,7 @@ function App() {
   const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const [coins, setCoins] = useState(getStoredCoins)
   const [recentWords, setRecentWords] = useState(getStoredRecentWords)
+  const [googleBonusGranted, setGoogleBonusGranted] = useState(false)
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
   const [inputValue, setInputValue] = useState('')
   const [gameState, setGameState] = useState('playing')
@@ -93,6 +106,7 @@ function App() {
   const coinsRef = useRef(coins)
   const themeRef = useRef(theme)
   const recentWordsRef = useRef(recentWords)
+  const googleBonusRef = useRef(googleBonusGranted)
 
   useEffect(() => {
     levelRef.current = level
@@ -116,6 +130,10 @@ function App() {
     recentWordsRef.current = recentWords
     storeRecentWords(recentWords)
   }, [recentWords])
+
+  useEffect(() => {
+    googleBonusRef.current = googleBonusGranted
+  }, [googleBonusGranted])
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -169,6 +187,7 @@ function App() {
       setWord('')
       setGuessedWord([])
       setAttemptsLeft(MAX_ATTEMPTS)
+      setGoogleBonusGranted(false)
       setMessage('Inserisci una lettera per iniziare.')
       setInputValue('')
       setGameState('playing')
@@ -195,14 +214,21 @@ function App() {
         return
       }
 
+      const googleLinked = hasGoogleIdentity(authUser)
+
       if (!data) {
+        const bonus = googleLinked ? 100 : 0
+        const nextCoins = coinsRef.current + bonus
+        setCoins(nextCoins)
+        setGoogleBonusGranted(googleLinked)
         const insertPayload = {
           user_id: authUser.id,
           level: levelRef.current,
-          coins: coinsRef.current,
+          coins: nextCoins,
           max_attempts: maxAttemptsRef.current,
           recent_words: recentWordsRef.current,
           theme: themeRef.current,
+          google_bonus_granted: googleLinked,
           last_active_at: new Date().toISOString(),
         }
         const { error: insertError } = await supabase.from('player_profiles').insert(insertPayload)
@@ -213,8 +239,12 @@ function App() {
         return
       }
 
+      const baseCoins = typeof data.coins === 'number' ? data.coins : 0
+      const bonusNeeded = googleLinked && !data.google_bonus_granted
+      const finalCoins = bonusNeeded ? baseCoins + 100 : baseCoins
+
       setLevel(typeof data.level === 'number' ? data.level : 1)
-      setCoins(typeof data.coins === 'number' ? data.coins : 0)
+      setCoins(finalCoins)
       const nextMaxAttempts =
         typeof data.max_attempts === 'number' ? data.max_attempts : MAX_ATTEMPTS
       setMaxAttempts(nextMaxAttempts)
@@ -225,6 +255,18 @@ function App() {
         ? data.recent_words.filter((word) => typeof word === 'string')
         : []
       setRecentWords(nextRecent)
+      setGoogleBonusGranted(Boolean(data.google_bonus_granted) || bonusNeeded)
+
+      if (bonusNeeded) {
+        await supabase
+          .from('player_profiles')
+          .update({
+            coins: finalCoins,
+            google_bonus_granted: true,
+            last_active_at: new Date().toISOString(),
+          })
+          .eq('user_id', authUser.id)
+      }
       setProfileLoaded(true)
     }
 
@@ -245,10 +287,11 @@ function App() {
       max_attempts: maxAttempts,
       recent_words: recentWords,
       theme,
+      google_bonus_granted: googleBonusGranted,
       last_active_at: new Date().toISOString(),
     }
     await supabase.from('player_profiles').upsert(payload, { onConflict: 'user_id' })
-  }, [authUser, coins, level, maxAttempts, recentWords, theme])
+  }, [authUser, coins, googleBonusGranted, level, maxAttempts, recentWords, theme])
 
   useEffect(() => {
     if (!authUser || !profileLoaded) {

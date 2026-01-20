@@ -3,6 +3,7 @@ create table if not exists public.player_profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   level integer not null default 1,
   coins integer not null default 0,
+  google_bonus_granted boolean not null default false,
   max_attempts integer not null default 10,
   recent_words text[] not null default '{}',
   theme text not null default 'light',
@@ -27,6 +28,9 @@ create trigger set_player_profiles_updated_at
 before update on public.player_profiles
 for each row
 execute function public.set_updated_at();
+
+alter table public.player_profiles
+  add column if not exists google_bonus_granted boolean not null default false;
 
 -- Row Level Security
 alter table public.player_profiles enable row level security;
