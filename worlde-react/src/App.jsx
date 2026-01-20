@@ -5,7 +5,7 @@ import './App.css'
 
 const MAX_ATTEMPTS = 10
 const RECENT_WORDS_LIMIT = 30
-const START_DURATION_MS = 4200
+const START_DURATION_MS = 4600
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
 const getStoredLevel = () => {

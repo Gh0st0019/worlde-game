@@ -61,6 +61,8 @@
   width: clamp(4.5rem, 24vw, 6.5rem);
   height: auto;
   image-rendering: pixelated;
+  transform-origin: center;
+  animation: start-gif-bounce 4600ms ease-out forwards;
 }
 
 .start-bar {
@@ -612,6 +614,19 @@
   }
   100% {
     width: 100%;
+  }
+}
+
+@keyframes start-gif-bounce {
+  0%,
+  86% {
+    transform: scale(1);
+  }
+  92% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1.05);
   }
 }
 
