@@ -455,6 +455,12 @@ function App() {
               <div className="start-bar__fill" />
             </div>
             <div className="start-text">Caricamento...</div>
+            <div className="start-fun" aria-live="polite">
+              <div className="start-fun__line start-fun__line--a">Lucidando i pixel...</div>
+              <div className="start-fun__line start-fun__line--b">Conto le vocali...</div>
+              <div className="start-fun__line start-fun__line--c">Addestro il dizionario...</div>
+              <div className="start-fun__line start-fun__line--d">Scaldo la tastiera...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -507,14 +513,16 @@ function App() {
               <img className="auth-button__icon" src="/google.png" alt="" aria-hidden="true" />
               <span>Accedi con Google</span>
             </button>
-            <button
-              className="auth-link"
-              type="button"
-              onClick={handleGuest}
-              disabled={authBusy}
-            >
-              Continua come ospite
-            </button>
+            <div className="auth-guest">
+              <button
+                className="auth-link"
+                type="button"
+                onClick={handleGuest}
+                disabled={authBusy}
+              >
+                Continua come ospite
+              </button>
+            </div>
             {authError && <div className="auth-error">{authError}</div>}
           </div>
         </div>
