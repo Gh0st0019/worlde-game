@@ -485,6 +485,16 @@ function App() {
     setAuthBusy(false)
   }
 
+  const handleSignOut = async () => {
+    if (!supabaseReady || !supabase || authBusy) {
+      return
+    }
+    setAuthError('')
+    setAuthBusy(true)
+    await supabase.auth.signOut()
+    setAuthBusy(false)
+  }
+
   const wordLength = word.length
   const attemptIndices = Array.from({ length: maxAttempts }, (_, index) => index)
 
@@ -626,6 +636,10 @@ function App() {
                 <span className="theme-toggle__value">Collega Google</span>
               </button>
             )}
+            <button className="theme-toggle" type="button" onClick={handleSignOut} disabled={authBusy}>
+              <span className="theme-toggle__label">Account</span>
+              <span className="theme-toggle__value">{isAnonymous ? 'Esci ospite' : 'Logout'}</span>
+            </button>
             <button className="theme-toggle" type="button" onClick={toggleTheme}>
               <span className="theme-toggle__label">Tema</span>
               <span className="theme-toggle__value">
