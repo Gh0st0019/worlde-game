@@ -280,6 +280,11 @@
   min-width: 8.5rem;
 }
 
+.theme-toggle--static {
+  cursor: default;
+  pointer-events: none;
+}
+
 .theme-toggle:active {
   transform: translateY(var(--press-depth));
   box-shadow: 0 var(--press-shadow) 0 var(--shadow);

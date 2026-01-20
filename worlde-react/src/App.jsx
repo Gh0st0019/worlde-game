@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase, supabaseReady } from './lib/supabaseClient'
-import { WORD_BANK } from './data/wordBank'
+import { WORD_THEMES } from './data/wordBank'
 import './App.css'
 
 const MAX_ATTEMPTS = 10
@@ -51,34 +51,62 @@ const hasGoogleIdentity = (user) => {
   if (user.app_metadata?.provider === 'google') {
     return true
   }
+  if (Array.isArray(user.app_metadata?.providers) && user.app_metadata.providers.includes('google')) {
+    return true
+  }
   return Array.isArray(user.identities)
     ? user.identities.some((identity) => identity.provider === 'google')
     : false
 }
 
-const getStoredTheme = () => {
+const getPendingGoogleBonus = () => {
   if (typeof window === 'undefined') {
-    return 'light'
+    return false
   }
-  const stored = window.localStorage.getItem('worldeTheme')
-  if (stored === 'dark' || stored === 'light') {
-    return stored
+  return window.localStorage.getItem('worldePendingGoogleBonus') === '1'
+}
+
+const setPendingGoogleBonus = () => {
+  if (typeof window === 'undefined') {
+    return
   }
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark'
+  window.localStorage.setItem('worldePendingGoogleBonus', '1')
+}
+
+const clearPendingGoogleBonus = () => {
+  if (typeof window === 'undefined') {
+    return
   }
-  return 'light'
+  window.localStorage.removeItem('worldePendingGoogleBonus')
 }
 
 const getMinLengthForLevel = (level) => Math.min(6, 4 + Math.floor((level - 1) / 2))
 
 const pickRandomWord = (level, recentWords = []) => {
   const minLength = getMinLengthForLevel(level)
-  const candidates = WORD_BANK.filter((word) => word.length >= minLength)
   const recentSet = new Set(recentWords)
-  const filtered = candidates.filter((word) => !recentSet.has(word))
-  const pool = filtered.length ? filtered : candidates.length ? candidates : WORD_BANK
-  return pool[Math.floor(Math.random() * pool.length)]
+  const themeEntries = Object.entries(WORD_THEMES)
+    .map(([theme, words]) => {
+      const eligible = words.filter((word) => word.length >= minLength)
+      const filtered = eligible.filter((word) => !recentSet.has(word))
+      return {
+        theme,
+        eligible,
+        filtered,
+      }
+    })
+    .filter((entry) => entry.eligible.length > 0)
+
+  if (!themeEntries.length) {
+    return { word: '', theme: '' }
+  }
+
+  const availableThemes = themeEntries.filter((entry) => entry.filtered.length > 0)
+  const themePool = availableThemes.length ? availableThemes : themeEntries
+  const chosenTheme = themePool[Math.floor(Math.random() * themePool.length)]
+  const wordPool = chosenTheme.filtered.length ? chosenTheme.filtered : chosenTheme.eligible
+  const word = wordPool[Math.floor(Math.random() * wordPool.length)]
+  return { word, theme: chosenTheme.theme }
 }
 
 function App() {
@@ -88,6 +116,7 @@ function App() {
   const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const [coins, setCoins] = useState(getStoredCoins)
   const [recentWords, setRecentWords] = useState(getStoredRecentWords)
+  const [wordTheme, setWordTheme] = useState('')
   const [googleBonusGranted, setGoogleBonusGranted] = useState(false)
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
   const [inputValue, setInputValue] = useState('')
@@ -100,13 +129,11 @@ function App() {
   const [authError, setAuthError] = useState('')
   const [letterStatus, setLetterStatus] = useState({})
   const [level, setLevel] = useState(getStoredLevel)
-  const [theme, setTheme] = useState(getStoredTheme)
   const levelRef = useRef(level)
   const maxAttemptsRef = useRef(maxAttempts)
   const coinsRef = useRef(coins)
-  const themeRef = useRef(theme)
   const recentWordsRef = useRef(recentWords)
-  const googleBonusRef = useRef(googleBonusGranted)
+  const wordThemeRef = useRef(wordTheme)
 
   useEffect(() => {
     levelRef.current = level
@@ -132,25 +159,20 @@ function App() {
   }, [recentWords])
 
   useEffect(() => {
-    googleBonusRef.current = googleBonusGranted
-  }, [googleBonusGranted])
+    wordThemeRef.current = wordTheme
+  }, [wordTheme])
 
   useEffect(() => {
     if (typeof document === 'undefined') {
       return
     }
     const root = document.documentElement
-    root.dataset.theme = theme
-    themeRef.current = theme
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('worldeTheme', theme)
-    }
-    const themeColor = theme === 'dark' ? '#0b0f12' : '#f6efe4'
+    root.dataset.theme = 'light'
     const metaTheme = document.querySelector('meta[name="theme-color"]')
     if (metaTheme) {
-      metaTheme.setAttribute('content', themeColor)
+      metaTheme.setAttribute('content', '#f6efe4')
     }
-  }, [theme])
+  }, [])
 
   useEffect(() => {
     if (!supabaseReady || !supabase) {
@@ -188,6 +210,7 @@ function App() {
       setGuessedWord([])
       setAttemptsLeft(MAX_ATTEMPTS)
       setGoogleBonusGranted(false)
+      clearPendingGoogleBonus()
       setMessage('Inserisci una lettera per iniziare.')
       setInputValue('')
       setGameState('playing')
@@ -198,6 +221,7 @@ function App() {
     const loadProfile = async () => {
       setAuthError('')
       setProfileLoaded(false)
+      const pendingGoogleBonus = getPendingGoogleBonus()
       const { data, error } = await supabase
         .from('player_profiles')
         .select('*')
@@ -216,6 +240,8 @@ function App() {
 
       const googleLinked = hasGoogleIdentity(authUser)
 
+      const googleLinked = hasGoogleIdentity(authUser) || pendingGoogleBonus
+
       if (!data) {
         const bonus = googleLinked ? 100 : 0
         const nextCoins = coinsRef.current + bonus
@@ -227,13 +253,16 @@ function App() {
           coins: nextCoins,
           max_attempts: maxAttemptsRef.current,
           recent_words: recentWordsRef.current,
-          theme: themeRef.current,
+          theme: wordThemeRef.current || 'Astratto',
           google_bonus_granted: googleLinked,
           last_active_at: new Date().toISOString(),
         }
         const { error: insertError } = await supabase.from('player_profiles').insert(insertPayload)
         if (insertError) {
           setAuthError('Impossibile creare il profilo giocatore.')
+        }
+        if (googleLinked) {
+          clearPendingGoogleBonus()
         }
         setProfileLoaded(true)
         return
@@ -249,8 +278,11 @@ function App() {
         typeof data.max_attempts === 'number' ? data.max_attempts : MAX_ATTEMPTS
       setMaxAttempts(nextMaxAttempts)
       maxAttemptsRef.current = nextMaxAttempts
-      const nextTheme = data.theme === 'dark' ? 'dark' : 'light'
-      setTheme(nextTheme)
+      const storedTheme =
+        typeof data.theme === 'string' && !['light', 'dark'].includes(data.theme)
+          ? data.theme
+          : ''
+      setWordTheme(storedTheme)
       const nextRecent = Array.isArray(data.recent_words)
         ? data.recent_words.filter((word) => typeof word === 'string')
         : []
@@ -266,6 +298,9 @@ function App() {
             last_active_at: new Date().toISOString(),
           })
           .eq('user_id', authUser.id)
+      }
+      if (googleLinked) {
+        clearPendingGoogleBonus()
       }
       setProfileLoaded(true)
     }
@@ -286,12 +321,12 @@ function App() {
       coins,
       max_attempts: maxAttempts,
       recent_words: recentWords,
-      theme,
+      theme: wordTheme || 'Astratto',
       google_bonus_granted: googleBonusGranted,
       last_active_at: new Date().toISOString(),
     }
     await supabase.from('player_profiles').upsert(payload, { onConflict: 'user_id' })
-  }, [authUser, coins, googleBonusGranted, level, maxAttempts, recentWords, theme])
+  }, [authUser, coins, googleBonusGranted, level, maxAttempts, recentWords, wordTheme])
 
   useEffect(() => {
     if (!authUser || !profileLoaded) {
@@ -301,14 +336,15 @@ function App() {
       saveProfile()
     }, 600)
     return () => window.clearTimeout(timer)
-  }, [authUser, profileLoaded, coins, level, maxAttempts, recentWords, theme, saveProfile])
+  }, [authUser, profileLoaded, coins, level, maxAttempts, recentWords, wordTheme, saveProfile])
 
   const startNewGame = useCallback(() => {
     const currentRecent = recentWordsRef.current
-    const nextWord = pickRandomWord(levelRef.current, currentRecent)
+    const { word: nextWord, theme: nextTheme } = pickRandomWord(levelRef.current, currentRecent)
     const nextRecent = [nextWord, ...currentRecent.filter((word) => word !== nextWord)]
     setRecentWords(nextRecent)
     setWord(nextWord)
+    setWordTheme(nextTheme)
     setGuessedWord(Array(nextWord.length).fill('_'))
     setAttemptsLeft(maxAttemptsRef.current)
     setMessage('Inserisci una lettera per iniziare.')
@@ -432,10 +468,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeydown)
   }, [applyGuess, authUser, gameState, profileLoaded, showStart])
 
-  const toggleTheme = () => {
-    setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
-  }
-
   const isAnonymous = authUser?.is_anonymous === true
 
   const handleGuest = async () => {
@@ -458,6 +490,7 @@ function App() {
     setAuthError('')
     setAuthBusy(true)
     if (isAnonymous) {
+      setPendingGoogleBonus()
       const { error } = await supabase.auth.linkIdentity({ provider: 'google' })
       if (error) {
         setAuthError('Impossibile collegare Google.')
@@ -465,6 +498,7 @@ function App() {
       setAuthBusy(false)
       return
     }
+    setPendingGoogleBonus()
     const redirectTo = (() => {
       if (typeof window === 'undefined') {
         return 'https://worlde.online'
@@ -640,12 +674,10 @@ function App() {
               <span className="theme-toggle__label">Account</span>
               <span className="theme-toggle__value">{isAnonymous ? 'Esci ospite' : 'Logout'}</span>
             </button>
-            <button className="theme-toggle" type="button" onClick={toggleTheme}>
+            <div className="theme-toggle theme-toggle--static" aria-label="Tema parola">
               <span className="theme-toggle__label">Tema</span>
-              <span className="theme-toggle__value">
-                {theme === 'dark' ? 'Scuro' : 'Chiaro'}
-              </span>
-            </button>
+              <span className="theme-toggle__value">{wordTheme || '—'}</span>
+            </div>
           </div>
         </header>
 
