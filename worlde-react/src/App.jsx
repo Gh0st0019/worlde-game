@@ -4,6 +4,7 @@ import './App.css'
 
 const MAX_ATTEMPTS = 10
 const RECENT_WORDS_LIMIT = 30
+const START_DURATION_MS = 2400
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
 const getStoredLevel = () => {
@@ -76,6 +77,7 @@ function App() {
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
   const [inputValue, setInputValue] = useState('')
   const [gameState, setGameState] = useState('playing')
+  const [showStart, setShowStart] = useState(true)
   const [letterStatus, setLetterStatus] = useState({})
   const [level, setLevel] = useState(getStoredLevel)
   const [theme, setTheme] = useState(getStoredTheme)
@@ -129,12 +131,22 @@ function App() {
   }, [])
 
   useEffect(() => {
-    startNewGame()
-  }, [startNewGame])
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+    const timer = window.setTimeout(() => setShowStart(false), START_DURATION_MS)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!showStart) {
+      startNewGame()
+    }
+  }, [showStart, startNewGame])
 
   const applyGuess = useCallback(
     (rawLetter) => {
-      if (gameState !== 'playing') {
+      if (showStart || gameState !== 'playing') {
         return
       }
 
@@ -196,7 +208,7 @@ function App() {
         setMessage(`Lettera errata! Tentativi rimasti: ${nextAttempts}`)
       }
     },
-    [attemptsLeft, gameState, guessedWord, level, maxAttempts, word]
+    [attemptsLeft, gameState, guessedWord, level, maxAttempts, showStart, word]
   )
 
   const handleSubmit = (event) => {
@@ -217,7 +229,7 @@ function App() {
 
   useEffect(() => {
     const handleKeydown = (event) => {
-      if (gameState !== 'playing') {
+      if (showStart || gameState !== 'playing') {
         return
       }
       if (event.target && event.target.tagName === 'INPUT') {
@@ -231,7 +243,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeydown)
     return () => window.removeEventListener('keydown', handleKeydown)
-  }, [applyGuess, gameState])
+  }, [applyGuess, gameState, showStart])
 
   const toggleTheme = () => {
     setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
@@ -239,6 +251,22 @@ function App() {
 
   const wordLength = word.length
   const attemptIndices = Array.from({ length: maxAttempts }, (_, index) => index)
+
+  if (showStart) {
+    return (
+      <div className="app-shell">
+        <div className="start-screen" role="status" aria-live="polite">
+          <div className="start-panel">
+            <img className="start-gif" src="/earthspin.gif" alt="Pianeta che gira" />
+            <div className="start-bar" aria-hidden="true">
+              <div className="start-bar__fill" />
+            </div>
+            <div className="start-text">Caricamento...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="app-shell">
