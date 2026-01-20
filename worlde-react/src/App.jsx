@@ -13,6 +13,14 @@ const getStoredLevel = () => {
   return Number.isFinite(stored) && stored > 0 ? stored : 1
 }
 
+const getStoredCoins = () => {
+  if (typeof window === 'undefined') {
+    return 0
+  }
+  const stored = Number(window.localStorage.getItem('worldeCoins'))
+  return Number.isFinite(stored) && stored >= 0 ? stored : 0
+}
+
 const getStoredTheme = () => {
   if (typeof window === 'undefined') {
     return 'light'
@@ -41,6 +49,7 @@ function App() {
   const [guessedWord, setGuessedWord] = useState([])
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS)
   const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
+  const [coins, setCoins] = useState(getStoredCoins)
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
   const [inputValue, setInputValue] = useState('')
   const [gameState, setGameState] = useState('playing')
@@ -56,6 +65,12 @@ function App() {
       window.localStorage.setItem('worldeLevel', String(level))
     }
   }, [level])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('worldeCoins', String(coins))
+    }
+  }, [coins])
 
   useEffect(() => {
     maxAttemptsRef.current = maxAttempts
@@ -115,8 +130,10 @@ function App() {
 
         if (!nextGuessed.includes('_')) {
           const nextLevel = level + 1
+          const reward = Math.max(1, attemptsLeft)
           setGameState('won')
           setLevel(nextLevel)
+          setCoins((prev) => prev + reward)
           maxAttemptsRef.current = MAX_ATTEMPTS
           setMaxAttempts(MAX_ATTEMPTS)
           setMessage(`Complimenti!! Hai indovinato la parola: ${word}. Livello ${nextLevel}!`)
@@ -232,37 +249,44 @@ function App() {
         </header>
 
         <main className="cabinet">
-          <section className="screen">
-            <div className="screen__frame">
-              <div className="screen__glow" />
-              <div className="board" style={{ '--word-length': wordLength }}>
-                {guessedWord.map((letter, index) => {
-                  const isEmpty = letter === '_'
-                  return (
-                    <div
-                      className={`tile ${isEmpty ? 'tile--empty' : 'tile--filled'}`}
-                      key={`${letter}-${index}`}
-                    >
-                      <span className="tile__char">{letter}</span>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div className="attempts" aria-label="Tentativi rimasti">
-                {attemptIndices.map((index) => (
-                  <span
-                    key={`life-${index}`}
-                    className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
-                  />
-                ))}
-              </div>
-
-              <div className={`message message--${gameState}`} aria-live="polite">
-                {message}
-              </div>
+          <div className="screen-layout">
+            <div className="money-bar" aria-label="Monete del giocatore">
+              <img className="coin" src="/coin.png" alt="Moneta" />
+              <span className="money-text">Monete: {coins}</span>
             </div>
-          </section>
+
+            <section className="screen">
+              <div className="screen__frame">
+                <div className="screen__glow" />
+                <div className="board" style={{ '--word-length': wordLength }}>
+                  {guessedWord.map((letter, index) => {
+                    const isEmpty = letter === '_'
+                    return (
+                      <div
+                        className={`tile ${isEmpty ? 'tile--empty' : 'tile--filled'}`}
+                        key={`${letter}-${index}`}
+                      >
+                        <span className="tile__char">{letter}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div className="attempts" aria-label="Tentativi rimasti">
+                  {attemptIndices.map((index) => (
+                    <span
+                      key={`life-${index}`}
+                      className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
+                    />
+                  ))}
+                </div>
+
+                <div className={`message message--${gameState}`} aria-live="polite">
+                  {message}
+                </div>
+              </div>
+            </section>
+          </div>
 
           <section className="controls">
             <form className="guess" onSubmit={handleSubmit}>
