@@ -13,6 +13,9 @@ npm install
 npm run dev
 ```
 
+Il dev server e la preview sono configurati per IPv6-only: apri `http://[::1]:5173/`.
+Se vuoi un IPv6 diverso (o un dual stack), modifica `vite.config.js`.
+
 ## Struttura
 
 - `src/App.jsx`: logica e UI del gioco

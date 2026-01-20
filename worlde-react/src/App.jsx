@@ -3,7 +3,6 @@ import { WORD_BANK } from './data/wordBank'
 import './App.css'
 
 const MAX_ATTEMPTS = 10
-const ATTEMPT_INDICES = Array.from({ length: MAX_ATTEMPTS }, (_, index) => index)
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
 const getStoredLevel = () => {
@@ -41,6 +40,7 @@ function App() {
   const [word, setWord] = useState('')
   const [guessedWord, setGuessedWord] = useState([])
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS)
+  const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
   const [inputValue, setInputValue] = useState('')
   const [gameState, setGameState] = useState('playing')
@@ -48,6 +48,7 @@ function App() {
   const [level, setLevel] = useState(getStoredLevel)
   const [theme, setTheme] = useState(getStoredTheme)
   const levelRef = useRef(level)
+  const maxAttemptsRef = useRef(maxAttempts)
 
   useEffect(() => {
     levelRef.current = level
@@ -55,6 +56,10 @@ function App() {
       window.localStorage.setItem('worldeLevel', String(level))
     }
   }, [level])
+
+  useEffect(() => {
+    maxAttemptsRef.current = maxAttempts
+  }, [maxAttempts])
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -76,7 +81,7 @@ function App() {
     const nextWord = pickRandomWord(levelRef.current)
     setWord(nextWord)
     setGuessedWord(Array(nextWord.length).fill('_'))
-    setAttemptsLeft(MAX_ATTEMPTS)
+    setAttemptsLeft(maxAttemptsRef.current)
     setMessage('Inserisci una lettera per iniziare.')
     setInputValue('')
     setGameState('playing')
@@ -112,6 +117,8 @@ function App() {
           const nextLevel = level + 1
           setGameState('won')
           setLevel(nextLevel)
+          maxAttemptsRef.current = MAX_ATTEMPTS
+          setMaxAttempts(MAX_ATTEMPTS)
           setMessage(`Complimenti!! Hai indovinato la parola: ${word}. Livello ${nextLevel}!`)
         } else {
           setMessage('Ottima lettera!')
@@ -125,13 +132,29 @@ function App() {
 
       if (nextAttempts <= 0) {
         setGameState('lost')
-        setLevel(1)
-        setMessage(`Hai finito i tentativi! La parola era: ${word}. Livello azzerato.`)
+        const reducedMax = maxAttempts - 1
+        if (reducedMax > 0) {
+          maxAttemptsRef.current = reducedMax
+          setMaxAttempts(reducedMax)
+          setMessage(
+            `Hai finito i tentativi! La parola era: ${word}. Riprovi il livello ${level} con ${reducedMax} tentativi.`
+          )
+        } else {
+          const nextLevel = Math.max(1, level - 1)
+          maxAttemptsRef.current = MAX_ATTEMPTS
+          setMaxAttempts(MAX_ATTEMPTS)
+          setLevel(nextLevel)
+          const levelMessage =
+            nextLevel < level ? `Scendi al livello ${nextLevel}` : 'Resti al livello 1'
+          setMessage(
+            `Hai finito i tentativi! La parola era: ${word}. ${levelMessage} con ${MAX_ATTEMPTS} tentativi.`
+          )
+        }
       } else {
         setMessage(`Lettera errata! Tentativi rimasti: ${nextAttempts}`)
       }
     },
-    [attemptsLeft, gameState, guessedWord, level, word]
+    [attemptsLeft, gameState, guessedWord, level, maxAttempts, word]
   )
 
   const handleSubmit = (event) => {
@@ -173,6 +196,7 @@ function App() {
   }
 
   const wordLength = word.length
+  const attemptIndices = Array.from({ length: maxAttempts }, (_, index) => index)
 
   return (
     <div className="app-shell">
@@ -193,7 +217,7 @@ function App() {
             <div className="meta">
               <span className="meta__label">Tentativi</span>
               <span className="meta__value">
-                {attemptsLeft}/{MAX_ATTEMPTS}
+                {attemptsLeft}/{maxAttempts}
               </span>
             </div>
           </div>
@@ -226,7 +250,7 @@ function App() {
               </div>
 
               <div className="attempts" aria-label="Tentativi rimasti">
-                {ATTEMPT_INDICES.map((index) => (
+                {attemptIndices.map((index) => (
                   <span
                     key={`life-${index}`}
                     className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
