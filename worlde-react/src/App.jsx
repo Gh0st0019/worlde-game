@@ -132,7 +132,7 @@ function App() {
 
       if (nextAttempts <= 0) {
         setGameState('lost')
-        const reducedMax = maxAttempts - 1
+        const reducedMax = maxAttempts - 2
         if (reducedMax > 0) {
           maxAttemptsRef.current = reducedMax
           setMaxAttempts(reducedMax)
@@ -147,7 +147,7 @@ function App() {
           const levelMessage =
             nextLevel < level ? `Scendi al livello ${nextLevel}` : 'Resti al livello 1'
           setMessage(
-            `Hai finito i tentativi! La parola era: ${word}. ${levelMessage} con ${MAX_ATTEMPTS} tentativi.`
+            `Hai finito i tentativi! La parola era: ${word}. Game over. ${levelMessage} con ${MAX_ATTEMPTS} tentativi.`
           )
         }
       } else {
