@@ -238,8 +238,6 @@ function App() {
         return
       }
 
-      const googleLinked = hasGoogleIdentity(authUser)
-
       const googleLinked = hasGoogleIdentity(authUser) || pendingGoogleBonus
 
       if (!data) {
