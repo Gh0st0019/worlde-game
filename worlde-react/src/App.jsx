@@ -219,8 +219,14 @@ function App() {
     <div className="app-shell">
       <div className={`app app--${gameState}`}>
         <header className="header">
-          <div className="header__badge">
-            <span className="header__title">Worlde</span>
+          <div className="header__left">
+            <div className="header__badge">
+              <span className="header__title">Worlde</span>
+            </div>
+            <div className="coin-hud" aria-label="Monete del giocatore">
+              <img className="coin-hud__icon" src="/coin.png" alt="Moneta" />
+              <span className="coin-hud__text">Coins: {coins}</span>
+            </div>
           </div>
           <div className="header__meta">
             <div className="meta">
@@ -249,44 +255,37 @@ function App() {
         </header>
 
         <main className="cabinet">
-          <div className="screen-layout">
-            <div className="money-bar" aria-label="Monete del giocatore">
-              <img className="coin" src="/coin.png" alt="Moneta" />
-              <span className="money-text">Monete: {coins}</span>
-            </div>
-
-            <section className="screen">
-              <div className="screen__frame">
-                <div className="screen__glow" />
-                <div className="board" style={{ '--word-length': wordLength }}>
-                  {guessedWord.map((letter, index) => {
-                    const isEmpty = letter === '_'
-                    return (
-                      <div
-                        className={`tile ${isEmpty ? 'tile--empty' : 'tile--filled'}`}
-                        key={`${letter}-${index}`}
-                      >
-                        <span className="tile__char">{letter}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                <div className="attempts" aria-label="Tentativi rimasti">
-                  {attemptIndices.map((index) => (
-                    <span
-                      key={`life-${index}`}
-                      className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
-                    />
-                  ))}
-                </div>
-
-                <div className={`message message--${gameState}`} aria-live="polite">
-                  {message}
-                </div>
+          <section className="screen">
+            <div className="screen__frame">
+              <div className="screen__glow" />
+              <div className="board" style={{ '--word-length': wordLength }}>
+                {guessedWord.map((letter, index) => {
+                  const isEmpty = letter === '_'
+                  return (
+                    <div
+                      className={`tile ${isEmpty ? 'tile--empty' : 'tile--filled'}`}
+                      key={`${letter}-${index}`}
+                    >
+                      <span className="tile__char">{letter}</span>
+                    </div>
+                  )
+                })}
               </div>
-            </section>
-          </div>
+
+              <div className="attempts" aria-label="Tentativi rimasti">
+                {attemptIndices.map((index) => (
+                  <span
+                    key={`life-${index}`}
+                    className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
+                  />
+                ))}
+              </div>
+
+              <div className={`message message--${gameState}`} aria-live="polite">
+                {message}
+              </div>
+            </div>
+          </section>
 
           <section className="controls">
             <form className="guess" onSubmit={handleSubmit}>

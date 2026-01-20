@@ -37,6 +37,12 @@
   box-shadow: 0 var(--shadow-lift) 0 var(--shadow);
 }
 
+.header__left {
+  display: grid;
+  gap: var(--gap-sm);
+  justify-items: start;
+}
+
 .header__badge {
   display: flex;
   flex-direction: column;
@@ -57,6 +63,32 @@
   font-family: var(--font-alt);
   color: var(--ink-soft);
   letter-spacing: var(--subtitle-spacing);
+}
+
+.coin-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--panel);
+  border: var(--border-thick) solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 var(--shadow-rise) 0 var(--shadow);
+  font-family: var(--font-alt);
+  font-weight: bold;
+  color: var(--ink);
+  letter-spacing: var(--meta-spacing);
+}
+
+.coin-hud__icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  image-rendering: pixelated;
+}
+
+.coin-hud__text {
+  font-size: var(--meta-value);
+  text-transform: uppercase;
 }
 
 .header__meta {
