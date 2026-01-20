@@ -388,23 +388,25 @@
 }
 
 .attempts {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: var(--gap-sm);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
   width: min(100%, 14rem);
   margin: 0 auto;
 }
 
-.life {
-  height: var(--life-height);
-  border: var(--border-thin) solid var(--border);
-  background: var(--card-deep);
-  box-shadow: 0 var(--shadow-rise) 0 var(--shadow);
+.life-icon {
+  width: clamp(2.1rem, 8vw, 2.8rem);
+  height: clamp(0.65rem, 3vw, 0.9rem);
+  image-rendering: pixelated;
+  filter: none;
 }
 
-.life--on {
-  background: var(--accent-2);
-  border-color: var(--accent-2-border);
+.life-icon--off {
+  opacity: 0.25;
+  filter: grayscale(0.9);
 }
 
 .message {
