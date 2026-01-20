@@ -3,6 +3,7 @@ import { WORD_BANK } from './data/wordBank'
 import './App.css'
 
 const MAX_ATTEMPTS = 10
+const RECENT_WORDS_LIMIT = 30
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
 const getStoredLevel = () => {
@@ -21,6 +22,26 @@ const getStoredCoins = () => {
   return Number.isFinite(stored) && stored >= 0 ? stored : 0
 }
 
+const getStoredRecentWords = () => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+  try {
+    const stored = JSON.parse(window.localStorage.getItem('worldeRecentWords') || '[]')
+    return Array.isArray(stored) ? stored.filter((word) => typeof word === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+const storeRecentWords = (words) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  const trimmed = words.slice(0, RECENT_WORDS_LIMIT)
+  window.localStorage.setItem('worldeRecentWords', JSON.stringify(trimmed))
+}
+
 const getStoredTheme = () => {
   if (typeof window === 'undefined') {
     return 'light'
@@ -37,10 +58,12 @@ const getStoredTheme = () => {
 
 const getMinLengthForLevel = (level) => Math.min(6, 4 + Math.floor((level - 1) / 2))
 
-const pickRandomWord = (level) => {
+const pickRandomWord = (level, recentWords = []) => {
   const minLength = getMinLengthForLevel(level)
   const candidates = WORD_BANK.filter((word) => word.length >= minLength)
-  const pool = candidates.length ? candidates : WORD_BANK
+  const recentSet = new Set(recentWords)
+  const filtered = candidates.filter((word) => !recentSet.has(word))
+  const pool = filtered.length ? filtered : candidates.length ? candidates : WORD_BANK
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
@@ -93,7 +116,9 @@ function App() {
   }, [theme])
 
   const startNewGame = useCallback(() => {
-    const nextWord = pickRandomWord(levelRef.current)
+    const recentWords = getStoredRecentWords()
+    const nextWord = pickRandomWord(levelRef.current, recentWords)
+    storeRecentWords([nextWord, ...recentWords.filter((word) => word !== nextWord)])
     setWord(nextWord)
     setGuessedWord(Array(nextWord.length).fill('_'))
     setAttemptsLeft(maxAttemptsRef.current)
