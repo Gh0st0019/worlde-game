@@ -62,7 +62,7 @@
   height: auto;
   image-rendering: pixelated;
   transform-origin: center;
-  animation: start-gif-bounce 4600ms ease-out forwards;
+  animation: start-gif-zoom 4800ms ease-out forwards;
 }
 
 .start-bar {
@@ -617,16 +617,19 @@
   }
 }
 
-@keyframes start-gif-bounce {
+@keyframes start-gif-zoom {
   0%,
-  86% {
+  88% {
     transform: scale(1);
+    opacity: 1;
   }
-  92% {
-    transform: scale(1.18);
+  93% {
+    transform: scale(1.8);
+    opacity: 1;
   }
   100% {
-    transform: scale(1.05);
+    transform: scale(6);
+    opacity: 0;
   }
 }
 
