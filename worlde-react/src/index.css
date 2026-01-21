@@ -71,7 +71,7 @@
   --border-thick: clamp(0.14rem, 0.7vw, 0.2rem);
   --border-thin: clamp(0.1rem, 0.5vw, 0.16rem);
   --message-height: clamp(3.2rem, 10vw, 4rem);
-  --life-size: clamp(3.1rem, 12vw, 4.6rem);
+  --life-size: clamp(2.2rem, 9vw, 3.2rem);
   --action-height: clamp(2.6rem, 9vw, 3.2rem);
 }
 

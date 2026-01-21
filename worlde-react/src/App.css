@@ -390,8 +390,8 @@
 .attempts {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: var(--gap-md);
-  width: min(100%, 22rem);
+  gap: var(--gap-sm);
+  width: min(100%, 18rem);
   margin: 0 auto;
   justify-items: center;
   align-items: center;
