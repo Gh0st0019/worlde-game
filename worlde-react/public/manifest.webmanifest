@@ -12,6 +12,12 @@
       "src": "/earthapp.jpg",
       "sizes": "900x900",
       "type": "image/jpeg"
+    },
+    {
+      "src": "/earthapp-maskable.png",
+      "sizes": "900x900",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

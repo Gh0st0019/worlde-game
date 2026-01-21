@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase, supabaseReady } from './lib/supabaseClient'
-import { WORD_BANK, getThemeOptions } from './data/wordBank'
+import { WORD_THEMES } from './data/wordBank'
 import './App.css'
 
 const MAX_ATTEMPTS = 10
@@ -83,27 +83,6 @@ const getRandomInt = (max) => {
   return Math.floor(Math.random() * max)
 }
 
-const pickWeightedOption = (options) => {
-  const total = options.reduce((sum, option) => sum + option.weight, 0)
-  let cursor = getRandomInt(total)
-  for (const option of options) {
-    if (cursor < option.weight) {
-      return option
-    }
-    cursor -= option.weight
-  }
-  return options[options.length - 1]
-}
-
-const pickThemeForWord = (word, recentThemeSet) => {
-  const options = getThemeOptions(word)
-  const filtered = recentThemeSet?.size
-    ? options.filter((option) => !recentThemeSet.has(option.label))
-    : options
-  const pool = filtered.length ? filtered : options
-  return pickWeightedOption(pool).label
-}
-
 const hasGoogleIdentity = (user) => {
   if (!user) {
     return false
@@ -146,25 +125,30 @@ const pickRandomWord = (level, recentWords = [], recentThemes = []) => {
   const minLength = getMinLengthForLevel(level)
   const recentSet = new Set(recentWords)
   const recentThemeSet = new Set(recentThemes)
-  const eligible = WORD_BANK.filter((entry) => entry.length >= minLength)
+  const themeEntries = Object.entries(WORD_THEMES)
+    .map(([theme, words]) => {
+      const eligible = words.filter((word) => word.length >= minLength)
+      const filtered = eligible.filter((word) => !recentSet.has(word))
+      return {
+        theme,
+        eligible,
+        filtered,
+      }
+    })
+    .filter((entry) => entry.eligible.length > 0)
 
-  if (!eligible.length) {
+  if (!themeEntries.length) {
     return { word: '', theme: '' }
   }
 
-  const filtered = eligible.filter((entry) => !recentSet.has(entry))
-  const pool = filtered.length ? filtered : eligible
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const word = pool[getRandomInt(pool.length)]
-    const theme = pickThemeForWord(word, recentThemeSet)
-    if (!recentThemeSet.has(theme) || attempt === 19) {
-      return { word, theme }
-    }
-  }
-
-  const fallbackWord = pool[getRandomInt(pool.length)]
-  return { word: fallbackWord, theme: pickThemeForWord(fallbackWord, recentThemeSet) }
+  const availableThemes = themeEntries.filter((entry) => entry.filtered.length > 0)
+  const themePool = availableThemes.length ? availableThemes : themeEntries
+  const themeFiltered = themePool.filter((entry) => !recentThemeSet.has(entry.theme))
+  const finalThemePool = themeFiltered.length ? themeFiltered : themePool
+  const chosenTheme = finalThemePool[getRandomInt(finalThemePool.length)]
+  const wordPool = chosenTheme.filtered.length ? chosenTheme.filtered : chosenTheme.eligible
+  const word = wordPool[getRandomInt(wordPool.length)]
+  return { word, theme: chosenTheme.theme }
 }
 
 function App() {
@@ -178,7 +162,6 @@ function App() {
   const [wordTheme, setWordTheme] = useState('')
   const [googleBonusGranted, setGoogleBonusGranted] = useState(false)
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
-  const [inputValue, setInputValue] = useState('')
   const [gameState, setGameState] = useState('playing')
   const [showStart, setShowStart] = useState(true)
   const [authReady, setAuthReady] = useState(false)
@@ -277,7 +260,6 @@ function App() {
       setGoogleBonusGranted(false)
       clearPendingGoogleBonus()
       setMessage('Inserisci una lettera per iniziare.')
-      setInputValue('')
       setGameState('playing')
       setLetterStatus({})
       return
@@ -316,7 +298,7 @@ function App() {
           coins: nextCoins,
           max_attempts: maxAttemptsRef.current,
           recent_words: recentWordsRef.current,
-          theme: wordThemeRef.current || 'Generale',
+          theme: wordThemeRef.current || 'Natura',
           google_bonus_granted: googleLinked,
           last_active_at: new Date().toISOString(),
         }
@@ -384,7 +366,7 @@ function App() {
       coins,
       max_attempts: maxAttempts,
       recent_words: recentWords,
-      theme: wordTheme || 'Generale',
+      theme: wordTheme || 'Natura',
       google_bonus_granted: googleBonusGranted,
       last_active_at: new Date().toISOString(),
     }
@@ -418,7 +400,6 @@ function App() {
     setGuessedWord(Array(nextWord.length).fill('_'))
     setAttemptsLeft(maxAttemptsRef.current)
     setMessage('Inserisci una lettera per iniziare.')
-    setInputValue('')
     setGameState('playing')
     setLetterStatus({})
   }, [])
@@ -503,22 +484,6 @@ function App() {
     },
     [attemptsLeft, authUser, gameState, guessedWord, level, maxAttempts, profileLoaded, showStart, word]
   )
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    if (!inputValue) {
-      setMessage('Inserisci una lettera prima di inviare.')
-      return
-    }
-    applyGuess(inputValue)
-    setInputValue('')
-  }
-
-  const handleInputChange = (event) => {
-    const raw = event.target.value.toLowerCase()
-    const sanitized = raw.replace(/[^a-z]/g, '')
-    setInputValue(sanitized.slice(-1))
-  }
 
   useEffect(() => {
     const handleKeydown = (event) => {
@@ -789,33 +754,6 @@ function App() {
           </section>
 
           <section className="controls">
-            <form className="guess" onSubmit={handleSubmit}>
-              <label className="guess__label" htmlFor="letter-input">
-                Inserisci una lettera
-              </label>
-              <div className="guess__row">
-                <input
-                  id="letter-input"
-                  className="guess__input"
-                  type="text"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  maxLength={1}
-                  autoComplete="off"
-                  spellCheck="false"
-                  disabled={gameState !== 'playing'}
-                />
-                <button
-                  className="guess__button"
-                  type="submit"
-                  disabled={gameState !== 'playing'}
-                >
-                  Invia
-                </button>
-              </div>
-              <div className="guess__hint">Usa tastiera o click sui tasti.</div>
-            </form>
-
             <div className="keyboard" aria-label="Tastiera virtuale">
               {KEY_ROWS.map((row) => (
                 <div className="keyboard__row" key={row} style={{ '--keys': row.length }}>

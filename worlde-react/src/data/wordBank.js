@@ -384,72 +384,31 @@ export const SEMANTIC_THEMES = {
   ],
 }
 
-const VOWELS = new Set(['a', 'e', 'i', 'o', 'u'])
-const DOUBLE_REGEX = /(bb|cc|dd|ff|gg|ll|mm|nn|pp|rr|ss|tt|zz)/
-
+export const WORD_THEMES = {}
+export const THEME_NAMES = Object.keys(SEMANTIC_THEMES)
 const THEME_LOOKUP = new Map()
-Object.entries(SEMANTIC_THEMES).forEach(([theme, words]) => {
-  words.forEach((word) => {
-    const existing = THEME_LOOKUP.get(word)
-    if (existing) {
-      existing.push(theme)
-    } else {
-      THEME_LOOKUP.set(word, [theme])
+
+THEME_NAMES.forEach((theme) => {
+  const unique = Array.from(new Set(SEMANTIC_THEMES[theme]))
+  WORD_THEMES[theme] = unique
+  unique.forEach((word) => {
+    if (!THEME_LOOKUP.has(word)) {
+      THEME_LOOKUP.set(word, theme)
     }
   })
 })
 
-const countVowels = (word) => {
-  let count = 0
-  for (const char of word) {
-    if (VOWELS.has(char)) {
-      count += 1
-    }
+const hashWord = (word) => {
+  let hash = 0
+  for (let i = 0; i < word.length; i += 1) {
+    hash = (hash * 31 + word.charCodeAt(i)) >>> 0
   }
-  return count
+  return hash
 }
 
-export const THEME_RULES = [
-  { label: 'Verbo in -are', weight: 2, test: (word) => word.endsWith('are') },
-  { label: 'Verbo in -ere', weight: 2, test: (word) => word.endsWith('ere') },
-  { label: 'Verbo in -ire', weight: 2, test: (word) => word.endsWith('ire') },
-  { label: 'Doppia consonante', weight: 2, test: (word) => DOUBLE_REGEX.test(word) },
-  { label: 'Inizia con vocale', weight: 1, test: (word) => VOWELS.has(word[0]) },
-  { label: 'Finisce in vocale', weight: 1, test: (word) => VOWELS.has(word[word.length - 1]) },
-  { label: 'Finale in -one', weight: 1, test: (word) => word.endsWith('one') },
-  { label: 'Finale in -ino', weight: 1, test: (word) => word.endsWith('ino') },
-  { label: 'Finale in -etto', weight: 1, test: (word) => word.endsWith('etto') },
-  { label: 'Contiene Q', weight: 2, test: (word) => word.includes('q') },
-  { label: 'Contiene Z', weight: 1, test: (word) => word.includes('z') },
-  { label: 'Molte vocali', weight: 1, test: (word) => countVowels(word) >= 3 },
-  { label: 'Poche vocali', weight: 1, test: (word) => countVowels(word) <= 1 },
-  { label: 'Parola di 4 lettere', weight: 1, test: (word) => word.length === 4 },
-  { label: 'Parola di 5 lettere', weight: 1, test: (word) => word.length === 5 },
-  { label: 'Parola di 6 lettere', weight: 1, test: (word) => word.length === 6 },
-  { label: 'Parola lunga', weight: 1, test: (word) => word.length >= 7 },
-]
+export const getThemeForWord = (word) => THEME_LOOKUP.get(word) || THEME_NAMES[0]
 
-export const getThemeOptions = (word) => {
-  const options = new Map()
-  const add = (label, weight) => {
-    options.set(label, (options.get(label) ?? 0) + weight)
-  }
-  const semantic = THEME_LOOKUP.get(word)
-  if (semantic) {
-    semantic.forEach((theme) => add(theme, 5))
-  }
-  THEME_RULES.forEach((rule) => {
-    if (rule.test(word)) {
-      add(rule.label, rule.weight)
-    }
-  })
-  if (options.size === 0) {
-    return [{ label: 'Generale', weight: 1 }]
-  }
-  return Array.from(options, ([label, weight]) => ({ label, weight }))
-}
-
-export const WORD_BANK = [
+const BASE_WORDS = [
   "abbaiati",
   "abbaiera",
   "abbeveri",
@@ -3742,3 +3701,17 @@ export const WORD_BANK = [
   "zucca",
   "zucchero",
 ]
+
+const assigned = new Set(Object.values(WORD_THEMES).flat())
+BASE_WORDS.forEach((word) => {
+  if (assigned.has(word)) {
+    return
+  }
+  const theme = THEME_NAMES[hashWord(word) % THEME_NAMES.length]
+  WORD_THEMES[theme].push(word)
+  if (!THEME_LOOKUP.has(word)) {
+    THEME_LOOKUP.set(word, theme)
+  }
+})
+
+export const WORD_BANK = Object.values(WORD_THEMES).flat()
