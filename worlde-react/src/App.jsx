@@ -699,9 +699,13 @@ function App() {
 
               <div className="attempts" aria-label="Tentativi rimasti">
                 {attemptIndices.map((index) => (
-                  <span
+                  <img
                     key={`life-${index}`}
                     className={`life ${index < attemptsLeft ? 'life--on' : 'life--off'}`}
+                    src="/life.png"
+                    alt=""
+                    aria-hidden="true"
+                    draggable="false"
                   />
                 ))}
               </div>

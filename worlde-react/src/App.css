@@ -391,20 +391,28 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gap-sm);
-  width: min(100%, 14rem);
+  width: min(100%, 18rem);
   margin: 0 auto;
+  justify-items: center;
+  align-items: center;
 }
 
 .life {
-  height: var(--life-height);
-  border: var(--border-thin) solid var(--border);
-  background: var(--card-deep);
-  box-shadow: 0 var(--shadow-rise) 0 var(--shadow);
+  display: block;
+  width: 100%;
+  max-width: var(--life-size);
+  height: auto;
+  image-rendering: pixelated;
+  transition: opacity 160ms ease, filter 160ms ease;
 }
 
 .life--on {
-  background: var(--accent-2);
-  border-color: var(--accent-2-border);
+  opacity: 1;
+}
+
+.life--off {
+  opacity: 0.3;
+  filter: grayscale(0.9) brightness(0.85);
 }
 
 .message {
