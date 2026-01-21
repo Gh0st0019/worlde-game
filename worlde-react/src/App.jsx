@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase, supabaseReady } from './lib/supabaseClient'
-import { WORD_THEMES } from './data/wordBank'
+import { WORD_BANK, getThemeOptions } from './data/wordBank'
 import './App.css'
 
 const MAX_ATTEMPTS = 10
-const RECENT_WORDS_LIMIT = 30
+const RECENT_WORDS_LIMIT = 60
+const RECENT_THEMES_LIMIT = 12
 const START_DURATION_MS = 4600
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
@@ -44,6 +45,65 @@ const storeRecentWords = (words) => {
   window.localStorage.setItem('worldeRecentWords', JSON.stringify(trimmed))
 }
 
+const getStoredRecentThemes = () => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+  try {
+    const stored = JSON.parse(window.localStorage.getItem('worldeRecentThemes') || '[]')
+    return Array.isArray(stored) ? stored.filter((theme) => typeof theme === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+const storeRecentThemes = (themes) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  const trimmed = themes.slice(0, RECENT_THEMES_LIMIT)
+  window.localStorage.setItem('worldeRecentThemes', JSON.stringify(trimmed))
+}
+
+const getRandomInt = (max) => {
+  if (max <= 0) {
+    return 0
+  }
+  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+    const maxUint32 = 0xffffffff
+    const limit = maxUint32 - (maxUint32 % max)
+    const buffer = new Uint32Array(1)
+    let value = 0
+    do {
+      window.crypto.getRandomValues(buffer)
+      value = buffer[0]
+    } while (value >= limit)
+    return value % max
+  }
+  return Math.floor(Math.random() * max)
+}
+
+const pickWeightedOption = (options) => {
+  const total = options.reduce((sum, option) => sum + option.weight, 0)
+  let cursor = getRandomInt(total)
+  for (const option of options) {
+    if (cursor < option.weight) {
+      return option
+    }
+    cursor -= option.weight
+  }
+  return options[options.length - 1]
+}
+
+const pickThemeForWord = (word, recentThemeSet) => {
+  const options = getThemeOptions(word)
+  const filtered = recentThemeSet?.size
+    ? options.filter((option) => !recentThemeSet.has(option.label))
+    : options
+  const pool = filtered.length ? filtered : options
+  return pickWeightedOption(pool).label
+}
+
 const hasGoogleIdentity = (user) => {
   if (!user) {
     return false
@@ -80,33 +140,31 @@ const clearPendingGoogleBonus = () => {
   window.localStorage.removeItem('worldePendingGoogleBonus')
 }
 
-const getMinLengthForLevel = (level) => Math.min(6, 4 + Math.floor((level - 1) / 2))
+const getMinLengthForLevel = (level) => Math.min(8, 4 + Math.floor((level - 1) / 2))
 
-const pickRandomWord = (level, recentWords = []) => {
+const pickRandomWord = (level, recentWords = [], recentThemes = []) => {
   const minLength = getMinLengthForLevel(level)
   const recentSet = new Set(recentWords)
-  const themeEntries = Object.entries(WORD_THEMES)
-    .map(([theme, words]) => {
-      const eligible = words.filter((word) => word.length >= minLength)
-      const filtered = eligible.filter((word) => !recentSet.has(word))
-      return {
-        theme,
-        eligible,
-        filtered,
-      }
-    })
-    .filter((entry) => entry.eligible.length > 0)
+  const recentThemeSet = new Set(recentThemes)
+  const eligible = WORD_BANK.filter((entry) => entry.length >= minLength)
 
-  if (!themeEntries.length) {
+  if (!eligible.length) {
     return { word: '', theme: '' }
   }
 
-  const availableThemes = themeEntries.filter((entry) => entry.filtered.length > 0)
-  const themePool = availableThemes.length ? availableThemes : themeEntries
-  const chosenTheme = themePool[Math.floor(Math.random() * themePool.length)]
-  const wordPool = chosenTheme.filtered.length ? chosenTheme.filtered : chosenTheme.eligible
-  const word = wordPool[Math.floor(Math.random() * wordPool.length)]
-  return { word, theme: chosenTheme.theme }
+  const filtered = eligible.filter((entry) => !recentSet.has(entry))
+  const pool = filtered.length ? filtered : eligible
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const word = pool[getRandomInt(pool.length)]
+    const theme = pickThemeForWord(word, recentThemeSet)
+    if (!recentThemeSet.has(theme) || attempt === 19) {
+      return { word, theme }
+    }
+  }
+
+  const fallbackWord = pool[getRandomInt(pool.length)]
+  return { word: fallbackWord, theme: pickThemeForWord(fallbackWord, recentThemeSet) }
 }
 
 function App() {
@@ -116,6 +174,7 @@ function App() {
   const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const [coins, setCoins] = useState(getStoredCoins)
   const [recentWords, setRecentWords] = useState(getStoredRecentWords)
+  const [recentThemes, setRecentThemes] = useState(getStoredRecentThemes)
   const [wordTheme, setWordTheme] = useState('')
   const [googleBonusGranted, setGoogleBonusGranted] = useState(false)
   const [message, setMessage] = useState('Inserisci una lettera per iniziare.')
@@ -133,6 +192,7 @@ function App() {
   const maxAttemptsRef = useRef(maxAttempts)
   const coinsRef = useRef(coins)
   const recentWordsRef = useRef(recentWords)
+  const recentThemesRef = useRef(recentThemes)
   const wordThemeRef = useRef(wordTheme)
 
   useEffect(() => {
@@ -157,6 +217,11 @@ function App() {
     recentWordsRef.current = recentWords
     storeRecentWords(recentWords)
   }, [recentWords])
+
+  useEffect(() => {
+    recentThemesRef.current = recentThemes
+    storeRecentThemes(recentThemes)
+  }, [recentThemes])
 
   useEffect(() => {
     wordThemeRef.current = wordTheme
@@ -251,7 +316,7 @@ function App() {
           coins: nextCoins,
           max_attempts: maxAttemptsRef.current,
           recent_words: recentWordsRef.current,
-          theme: wordThemeRef.current || 'Astratto',
+          theme: wordThemeRef.current || 'Generale',
           google_bonus_granted: googleLinked,
           last_active_at: new Date().toISOString(),
         }
@@ -319,7 +384,7 @@ function App() {
       coins,
       max_attempts: maxAttempts,
       recent_words: recentWords,
-      theme: wordTheme || 'Astratto',
+      theme: wordTheme || 'Generale',
       google_bonus_granted: googleBonusGranted,
       last_active_at: new Date().toISOString(),
     }
@@ -338,9 +403,16 @@ function App() {
 
   const startNewGame = useCallback(() => {
     const currentRecent = recentWordsRef.current
-    const { word: nextWord, theme: nextTheme } = pickRandomWord(levelRef.current, currentRecent)
+    const currentThemes = recentThemesRef.current
+    const { word: nextWord, theme: nextTheme } = pickRandomWord(
+      levelRef.current,
+      currentRecent,
+      currentThemes
+    )
     const nextRecent = [nextWord, ...currentRecent.filter((word) => word !== nextWord)]
+    const nextThemes = [nextTheme, ...currentThemes.filter((theme) => theme !== nextTheme)]
     setRecentWords(nextRecent)
+    setRecentThemes(nextThemes)
     setWord(nextWord)
     setWordTheme(nextTheme)
     setGuessedWord(Array(nextWord.length).fill('_'))

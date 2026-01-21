@@ -6,7 +6,7 @@ create table if not exists public.player_profiles (
   google_bonus_granted boolean not null default false,
   max_attempts integer not null default 10,
   recent_words text[] not null default '{}',
-  theme text not null default 'Astratto',
+  theme text not null default 'Generale',
   last_active_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -33,7 +33,7 @@ alter table public.player_profiles
   add column if not exists google_bonus_granted boolean not null default false;
 
 alter table public.player_profiles
-  alter column theme set default 'Astratto';
+  alter column theme set default 'Generale';
 
 -- Row Level Security
 alter table public.player_profiles enable row level security;
