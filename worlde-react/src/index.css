@@ -71,7 +71,7 @@
   --border-thick: clamp(0.14rem, 0.7vw, 0.2rem);
   --border-thin: clamp(0.1rem, 0.5vw, 0.16rem);
   --message-height: clamp(3.2rem, 10vw, 4rem);
-  --life-size: clamp(2.2rem, 9vw, 3.2rem);
+  --life-size: clamp(2.7rem, 11vw, 4.1rem);
   --action-height: clamp(2.6rem, 9vw, 3.2rem);
 }
 
@@ -81,7 +81,7 @@
     --tile-size: clamp(2.2rem, 12vw, 3.1rem);
     --key-height: clamp(2.4rem, 12vw, 3rem);
     --input-height: clamp(2.6rem, 12vw, 3.1rem);
-    --life-size: clamp(2rem, 10vw, 2.8rem);
+    --life-size: clamp(2.4rem, 12vw, 3.4rem);
   }
 }
 
@@ -91,7 +91,7 @@
     --tile-size: clamp(2.8rem, 8vw, 3.6rem);
     --key-height: clamp(2.7rem, 7vw, 3.3rem);
     --input-height: clamp(2.9rem, 7vw, 3.4rem);
-    --life-size: clamp(2.4rem, 7vw, 3.4rem);
+    --life-size: clamp(2.9rem, 8vw, 4.2rem);
   }
 }
 
@@ -104,7 +104,7 @@
     --key-font: clamp(1.1rem, 3vw, 1.5rem);
     --input-height: clamp(3rem, 5vw, 3.6rem);
     --input-font: clamp(1.7rem, 4vw, 2.3rem);
-    --life-size: clamp(2.6rem, 6vw, 3.6rem);
+    --life-size: clamp(3.2rem, 6.5vw, 4.6rem);
   }
 }
 

@@ -391,7 +391,7 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gap-sm);
-  width: min(100%, 18rem);
+  width: min(100%, 22rem);
   margin: 0 auto;
   justify-items: center;
   align-items: center;
@@ -403,16 +403,22 @@
   max-width: var(--life-size);
   height: auto;
   image-rendering: pixelated;
-  transition: opacity 160ms ease, filter 160ms ease;
+  transition: opacity 160ms ease, filter 160ms ease, transform 160ms ease;
+  transform: translateY(0) scale(1);
 }
 
 .life--on {
   opacity: 1;
+  filter:
+    drop-shadow(0 0.18rem 0 rgba(176, 138, 97, 0.6))
+    drop-shadow(0 0 0.7rem rgba(231, 168, 106, 0.35));
+  transform: translateY(-0.05rem) scale(1.04);
 }
 
 .life--off {
   opacity: 0.3;
   filter: grayscale(0.9) brightness(0.85);
+  transform: translateY(0.05rem) scale(0.92);
 }
 
 .message {
