@@ -365,11 +365,30 @@
   display: grid;
   place-items: center;
   border: var(--border-thick) solid var(--border);
-  background: var(--tile-base);
-  box-shadow: inset 0 0 0 var(--border-thin) var(--tile-border);
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.45rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)),
+    var(--tile-base);
+  box-shadow:
+    inset 0 0 0 var(--border-thin) var(--tile-border),
+    inset 0 -0.22rem 0 rgba(0, 0, 0, 0.08),
+    0 var(--shadow-rise) 0 var(--shadow);
   font-size: var(--tile-font);
   letter-spacing: var(--tile-spacing);
   text-transform: uppercase;
+}
+
+.tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 45%),
+    linear-gradient(315deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0) 55%);
+  opacity: 0.65;
+  pointer-events: none;
 }
 
 .tile--empty {
@@ -377,14 +396,24 @@
 }
 
 .tile--filled {
-  background: var(--tile-fill);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0)),
+    var(--tile-fill);
   border-color: var(--tile-border);
+  box-shadow:
+    inset 0 0 0 var(--border-thin) rgba(255, 255, 255, 0.35),
+    inset 0 -0.22rem 0 rgba(0, 0, 0, 0.08),
+    0 var(--shadow-rise) 0 var(--shadow),
+    0 0.45rem 0 rgba(231, 168, 106, 0.22);
   animation: tile-pop 140ms steps(2);
 }
 
 .tile__char {
   position: relative;
   z-index: 1;
+  text-shadow:
+    0 0.08rem 0 rgba(255, 255, 255, 0.45),
+    0 0.12rem 0 rgba(0, 0, 0, 0.15);
 }
 
 .attempts {
