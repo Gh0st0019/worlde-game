@@ -166,6 +166,7 @@ function App() {
   const [showStart, setShowStart] = useState(true)
   const [authReady, setAuthReady] = useState(false)
   const [authUser, setAuthUser] = useState(null)
+  const [localGuest, setLocalGuest] = useState(false)
   const [profileLoaded, setProfileLoaded] = useState(false)
   const [authBusy, setAuthBusy] = useState(false)
   const [authError, setAuthError] = useState('')
@@ -249,6 +250,10 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (localGuest) {
+      setProfileLoaded(true)
+      return
+    }
     if (!supabaseReady || !supabase) {
       return
     }
@@ -354,10 +359,10 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [authUser, supabaseReady])
+  }, [authUser, localGuest, supabaseReady])
 
   const saveProfile = useCallback(async () => {
-    if (!supabaseReady || !supabase || !authUser) {
+    if (localGuest || !supabaseReady || !supabase || !authUser) {
       return
     }
     const payload = {
@@ -371,7 +376,7 @@ function App() {
       last_active_at: new Date().toISOString(),
     }
     await supabase.from('player_profiles').upsert(payload, { onConflict: 'user_id' })
-  }, [authUser, coins, googleBonusGranted, level, maxAttempts, recentWords, wordTheme])
+  }, [authUser, coins, googleBonusGranted, level, localGuest, maxAttempts, recentWords, wordTheme])
 
   useEffect(() => {
     if (!authUser || !profileLoaded) {
@@ -413,14 +418,15 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!showStart && authUser && profileLoaded && !word) {
+    const hasPlayer = Boolean(authUser) || localGuest
+    if (!showStart && hasPlayer && profileLoaded && !word) {
       startNewGame()
     }
-  }, [showStart, authUser, profileLoaded, startNewGame, word])
+  }, [showStart, authUser, localGuest, profileLoaded, startNewGame, word])
 
   const applyGuess = useCallback(
     (rawLetter) => {
-      if (showStart || !authUser || !profileLoaded || gameState !== 'playing') {
+      if (showStart || (!authUser && !localGuest) || !profileLoaded || gameState !== 'playing') {
         return
       }
 
@@ -482,12 +488,23 @@ function App() {
         setMessage(`Lettera errata! Tentativi rimasti: ${nextAttempts}`)
       }
     },
-    [attemptsLeft, authUser, gameState, guessedWord, level, maxAttempts, profileLoaded, showStart, word]
+    [
+      attemptsLeft,
+      authUser,
+      gameState,
+      guessedWord,
+      level,
+      localGuest,
+      maxAttempts,
+      profileLoaded,
+      showStart,
+      word,
+    ]
   )
 
   useEffect(() => {
     const handleKeydown = (event) => {
-      if (showStart || !authUser || !profileLoaded || gameState !== 'playing') {
+      if (showStart || (!authUser && !localGuest) || !profileLoaded || gameState !== 'playing') {
         return
       }
       if (event.target && event.target.tagName === 'INPUT') {
@@ -501,19 +518,26 @@ function App() {
 
     window.addEventListener('keydown', handleKeydown)
     return () => window.removeEventListener('keydown', handleKeydown)
-  }, [applyGuess, authUser, gameState, profileLoaded, showStart])
+  }, [applyGuess, authUser, gameState, localGuest, profileLoaded, showStart])
 
-  const isAnonymous = authUser?.is_anonymous === true
+  const isSupabaseAnonymous = authUser?.is_anonymous === true
+  const isAnonymous = localGuest || isSupabaseAnonymous
 
   const handleGuest = async () => {
-    if (!supabaseReady || !supabase || authBusy) {
+    if (authBusy) {
       return
     }
     setAuthError('')
     setAuthBusy(true)
+    if (!supabaseReady || !supabase) {
+      setLocalGuest(true)
+      setAuthBusy(false)
+      return
+    }
     const { error } = await supabase.auth.signInAnonymously()
     if (error) {
-      setAuthError('Accesso ospite non disponibile.')
+      setLocalGuest(true)
+      setAuthError('Accesso ospite locale attivo (progressi solo su questo dispositivo).')
     }
     setAuthBusy(false)
   }
@@ -524,7 +548,30 @@ function App() {
     }
     setAuthError('')
     setAuthBusy(true)
-    if (isAnonymous) {
+    if (localGuest) {
+      setPendingGoogleBonus()
+      setLocalGuest(false)
+      const redirectTo = (() => {
+        if (typeof window === 'undefined') {
+          return 'https://worlde.online'
+        }
+        const origin = window.location.origin
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+          return 'https://worlde.online'
+        }
+        return `${origin}${window.location.pathname}`
+      })()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      })
+      if (error) {
+        setAuthError('Accesso con Google non disponibile.')
+      }
+      setAuthBusy(false)
+      return
+    }
+    if (isSupabaseAnonymous) {
       setPendingGoogleBonus()
       const { error } = await supabase.auth.linkIdentity({ provider: 'google' })
       if (error) {
@@ -555,11 +602,21 @@ function App() {
   }
 
   const handleSignOut = async () => {
-    if (!supabaseReady || !supabase || authBusy) {
+    if (authBusy) {
       return
     }
     setAuthError('')
     setAuthBusy(true)
+    if (localGuest) {
+      setLocalGuest(false)
+      setProfileLoaded(false)
+      setAuthBusy(false)
+      return
+    }
+    if (!supabaseReady || !supabase) {
+      setAuthBusy(false)
+      return
+    }
     await supabase.auth.signOut()
     setAuthBusy(false)
   }
@@ -589,7 +646,7 @@ function App() {
     )
   }
 
-  if (!supabaseReady) {
+  if (!supabaseReady && !localGuest) {
     return (
       <div className="app-shell">
         <div className="auth-screen" role="status" aria-live="polite">
@@ -620,7 +677,7 @@ function App() {
     )
   }
 
-  if (!authUser) {
+  if (!authUser && !localGuest) {
     return (
       <div className="app-shell">
         <div className="auth-screen" role="status" aria-live="polite">
@@ -702,7 +759,9 @@ function App() {
                 disabled={authBusy}
               >
                 <span className="theme-toggle__label">Account</span>
-                <span className="theme-toggle__value">Collega Google</span>
+                <span className="theme-toggle__value">
+                  {localGuest ? 'Accedi con Google' : 'Collega Google'}
+                </span>
               </button>
             )}
             <button className="theme-toggle" type="button" onClick={handleSignOut} disabled={authBusy}>
