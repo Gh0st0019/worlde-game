@@ -198,6 +198,76 @@
   color: var(--accent-3);
 }
 
+.name-panel {
+  width: min(20rem, 100%);
+  gap: var(--gap-md);
+}
+
+.name-title {
+  font-size: var(--header-title);
+  letter-spacing: var(--title-spacing);
+  text-transform: uppercase;
+}
+
+.name-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-thick) solid var(--border);
+  background: var(--card-deep);
+  border-radius: 0.7rem;
+  box-shadow: 0 var(--shadow-rise) 0 var(--shadow);
+  font-size: clamp(1.5rem, 8vw, 2.4rem);
+  letter-spacing: 0.2rem;
+  text-transform: uppercase;
+  cursor: text;
+}
+
+.name-display:focus-visible {
+  outline: 0.12rem solid var(--accent);
+  outline-offset: 0.12rem;
+}
+
+.name-slot {
+  display: inline-block;
+  min-width: 1ch;
+  text-align: center;
+}
+
+.name-slot--empty {
+  color: var(--ink-soft);
+  animation: name-wiggle var(--wiggle-duration, 680ms) ease-in-out infinite;
+  animation-delay: var(--wiggle-delay, 0ms);
+}
+
+.name-slot--filled {
+  color: var(--ink);
+  text-shadow:
+    0 0.08rem 0 rgba(255, 255, 255, 0.45),
+    0 0.12rem 0 rgba(0, 0, 0, 0.15);
+}
+
+.name-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.name-hint {
+  font-size: var(--hint-font);
+  color: var(--ink-dim);
+  letter-spacing: var(--meta-spacing);
+}
+
+.name-actions {
+  width: 100%;
+  display: flex;
+}
+
 .header__left {
   display: grid;
   gap: var(--gap-sm);
@@ -733,6 +803,22 @@
   }
 }
 
+@keyframes name-wiggle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-0.08rem) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(0.06rem) rotate(1.6deg);
+  }
+  75% {
+    transform: translateY(-0.05rem) rotate(-1.2deg);
+  }
+}
+
 
 @media (min-width: 37.5rem) {
   .header {
@@ -761,6 +847,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tile--filled {
+    animation: none;
+  }
+
+  .name-slot--empty {
     animation: none;
   }
 }

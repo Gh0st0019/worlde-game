@@ -4,6 +4,7 @@ import { WORD_THEMES } from './data/wordBank'
 import './App.css'
 
 const MAX_ATTEMPTS = 10
+const MAX_USERNAME_LENGTH = 5
 const RECENT_WORDS_LIMIT = 60
 const RECENT_THEMES_LIMIT = 12
 const START_DURATION_MS = 4600
@@ -63,6 +64,28 @@ const storeRecentThemes = (themes) => {
   }
   const trimmed = themes.slice(0, RECENT_THEMES_LIMIT)
   window.localStorage.setItem('worldeRecentThemes', JSON.stringify(trimmed))
+}
+
+const sanitizePlayerName = (value) =>
+  value.replace(/\s+/g, '').slice(0, MAX_USERNAME_LENGTH).toUpperCase()
+
+const getStoredPlayerName = () => {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+  const stored = window.localStorage.getItem('worldePlayerName')
+  return stored ? sanitizePlayerName(stored) : ''
+}
+
+const storePlayerName = (name) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  if (!name) {
+    window.localStorage.removeItem('worldePlayerName')
+    return
+  }
+  window.localStorage.setItem('worldePlayerName', name)
 }
 
 const getRandomInt = (max) => {
@@ -157,6 +180,8 @@ function App() {
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS)
   const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const [coins, setCoins] = useState(getStoredCoins)
+  const [playerName, setPlayerName] = useState(getStoredPlayerName)
+  const [nameDraft, setNameDraft] = useState('')
   const [recentWords, setRecentWords] = useState(getStoredRecentWords)
   const [recentThemes, setRecentThemes] = useState(getStoredRecentThemes)
   const [wordTheme, setWordTheme] = useState('')
@@ -178,6 +203,7 @@ function App() {
   const recentWordsRef = useRef(recentWords)
   const recentThemesRef = useRef(recentThemes)
   const wordThemeRef = useRef(wordTheme)
+  const nameInputRef = useRef(null)
 
   useEffect(() => {
     levelRef.current = level
@@ -210,6 +236,23 @@ function App() {
   useEffect(() => {
     wordThemeRef.current = wordTheme
   }, [wordTheme])
+
+  useEffect(() => {
+    if (!playerName) {
+      setNameDraft('')
+    }
+  }, [playerName])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+    if (playerName) {
+      return undefined
+    }
+    const timer = window.setTimeout(() => nameInputRef.current?.focus(), 140)
+    return () => window.clearTimeout(timer)
+  }, [playerName])
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -417,16 +460,24 @@ function App() {
     return () => window.clearTimeout(timer)
   }, [])
 
+  const needsPlayerName = !playerName
+
   useEffect(() => {
     const hasPlayer = Boolean(authUser) || localGuest
-    if (!showStart && hasPlayer && profileLoaded && !word) {
+    if (!showStart && hasPlayer && profileLoaded && !word && !needsPlayerName) {
       startNewGame()
     }
-  }, [showStart, authUser, localGuest, profileLoaded, startNewGame, word])
+  }, [showStart, authUser, localGuest, profileLoaded, startNewGame, word, needsPlayerName])
 
   const applyGuess = useCallback(
     (rawLetter) => {
-      if (showStart || (!authUser && !localGuest) || !profileLoaded || gameState !== 'playing') {
+      if (
+        showStart ||
+        needsPlayerName ||
+        (!authUser && !localGuest) ||
+        !profileLoaded ||
+        gameState !== 'playing'
+      ) {
         return
       }
 
@@ -499,12 +550,19 @@ function App() {
       profileLoaded,
       showStart,
       word,
+      needsPlayerName,
     ]
   )
 
   useEffect(() => {
     const handleKeydown = (event) => {
-      if (showStart || (!authUser && !localGuest) || !profileLoaded || gameState !== 'playing') {
+      if (
+        showStart ||
+        needsPlayerName ||
+        (!authUser && !localGuest) ||
+        !profileLoaded ||
+        gameState !== 'playing'
+      ) {
         return
       }
       if (event.target && event.target.tagName === 'INPUT') {
@@ -518,7 +576,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeydown)
     return () => window.removeEventListener('keydown', handleKeydown)
-  }, [applyGuess, authUser, gameState, localGuest, profileLoaded, showStart])
+  }, [applyGuess, authUser, gameState, localGuest, needsPlayerName, profileLoaded, showStart])
 
   const isSupabaseAnonymous = authUser?.is_anonymous === true
   const isAnonymous = localGuest || isSupabaseAnonymous
@@ -624,6 +682,23 @@ function App() {
   const wordLength = word.length
   const attemptIndices = Array.from({ length: maxAttempts }, (_, index) => index)
 
+  const nameSlots = Array.from({ length: MAX_USERNAME_LENGTH }, (_, index) => {
+    const char = nameDraft[index] || '_'
+    const isEmpty = !nameDraft[index]
+    return (
+      <span
+        key={`name-slot-${index}`}
+        className={`name-slot ${isEmpty ? 'name-slot--empty' : 'name-slot--filled'}`}
+        style={{
+          '--wiggle-delay': `${index * 120}ms`,
+          '--wiggle-duration': `${680 + index * 80}ms`,
+        }}
+      >
+        {char}
+      </span>
+    )
+  })
+
   if (showStart) {
     return (
       <div className="app-shell">
@@ -715,6 +790,82 @@ function App() {
         <div className="auth-screen" role="status" aria-live="polite">
           <div className="auth-panel">
             <div className="auth-title">Caricamento profilo...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (needsPlayerName) {
+    const handleNameChange = (event) => {
+      const nextValue = sanitizePlayerName(event.target.value)
+      setNameDraft(nextValue)
+    }
+
+    const confirmName = () => {
+      if (!nameDraft) {
+        return
+      }
+      const finalName = sanitizePlayerName(nameDraft)
+      if (!finalName) {
+        return
+      }
+      setPlayerName(finalName)
+      storePlayerName(finalName)
+    }
+
+    const handleNameKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        confirmName()
+      }
+    }
+
+    const focusNameInput = () => {
+      nameInputRef.current?.focus()
+    }
+
+    const handleNameDisplayKeyDown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        focusNameInput()
+      }
+    }
+
+    return (
+      <div className="app-shell">
+        <div className="auth-screen name-screen" role="dialog" aria-live="polite">
+          <div className="auth-panel name-panel">
+            <div className="name-title">Crea il tuo nome utente</div>
+            <div
+              className="name-display"
+              role="button"
+              tabIndex={0}
+              onClick={focusNameInput}
+              onKeyDown={handleNameDisplayKeyDown}
+              aria-label="Inserisci il tuo nome utente"
+            >
+              {nameSlots}
+            </div>
+            <input
+              ref={nameInputRef}
+              className="name-input"
+              type="text"
+              inputMode="text"
+              autoComplete="off"
+              spellCheck="false"
+              maxLength={MAX_USERNAME_LENGTH}
+              value={nameDraft}
+              onChange={handleNameChange}
+              onKeyDown={handleNameKeyDown}
+              aria-label="Nome utente"
+            />
+            <div className="name-hint">Massimo 5 caratteri</div>
+            <div className="name-actions">
+              <button className="action" type="button" onClick={confirmName} disabled={!nameDraft}>
+                Conferma
+              </button>
+            </div>
           </div>
         </div>
       </div>
