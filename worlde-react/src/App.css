@@ -27,14 +27,23 @@
 .header {
   display: grid;
   gap: var(--gap-md);
-  padding: var(--gap-md);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.15)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 0.18rem, transparent 0.18rem 0.6rem),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.2) 0 0.18rem, transparent 0.18rem 0.6rem),
-    var(--panel);
-  border: var(--border-thick) solid var(--border);
-  box-shadow: 0 var(--shadow-lift) 0 var(--shadow);
+  padding: var(--gap-lg);
+  position: relative;
+  overflow: hidden;
+  background: url("/back.png") center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  border: none;
+  box-shadow: 0 var(--shadow-lift) 0 rgba(47, 68, 32, 0.55);
+  --ink: #2f3a1f;
+  --ink-dim: #4d5f3b;
+  --ink-soft: #71855a;
+  --border: #44602b;
+  --shadow: #2f4420;
+  --panel: rgba(222, 242, 199, 0.88);
+  --panel-deep: rgba(210, 232, 184, 0.9);
+  --card: rgba(234, 247, 214, 0.9);
+  --card-deep: rgba(210, 232, 184, 0.85);
+  --accent: #7aa657;
 }
 
 .start-screen {
