@@ -814,8 +814,40 @@ function App() {
 
   if (needsPlayerName) {
     const handleNameChange = (event) => {
-      const nextValue = sanitizePlayerName(event.target.value)
-      setNameDraft(nextValue)
+      const nativeEvent = event.nativeEvent || {}
+      const inputType = nativeEvent.inputType
+      const data = nativeEvent.data
+      const targetValue = event.target.value
+
+      setNameDraft((prev) => {
+        if (inputType === 'deleteContentBackward' || inputType === 'deleteContentForward') {
+          return prev.slice(0, -1)
+        }
+
+        if (inputType === 'insertFromPaste') {
+          return sanitizePlayerName(targetValue)
+        }
+
+        if (typeof data === 'string' && data.length > 0) {
+          return sanitizePlayerName(prev + data)
+        }
+
+        const raw = sanitizePlayerName(targetValue)
+        if (raw.length <= prev.length) {
+          return raw
+        }
+        if (raw.startsWith(prev)) {
+          return raw
+        }
+        let remaining = raw
+        for (const char of prev) {
+          const index = remaining.indexOf(char)
+          if (index >= 0) {
+            remaining = remaining.slice(0, index) + remaining.slice(index + 1)
+          }
+        }
+        return sanitizePlayerName(prev + remaining)
+      })
     }
 
     const confirmName = () => {
@@ -869,6 +901,8 @@ function App() {
               type="text"
               inputMode="text"
               autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
               spellCheck="false"
               maxLength={MAX_USERNAME_LENGTH}
               value={nameDraft}
