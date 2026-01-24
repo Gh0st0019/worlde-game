@@ -926,52 +926,51 @@ function App() {
     <div className="app-shell">
       <div className={`app app--${gameState}`}>
         <header className="header">
-          <div className="header__left">
-            <div className="header__badge">
-              <span className="header__title">Worlde</span>
+          <div className="header__title-row">
+            <div className="header__title">Worlde</div>
+          </div>
+
+          <div className="header__stats-row">
+            <div className="header-card header-card--coins" aria-label="Monete del giocatore">
+              <div className="coin-hud coin-hud--banner">
+                <img className="coin-hud__icon" src="/coin.png" alt="Moneta" />
+                <span className="coin-hud__text">Coins: {coins}</span>
+              </div>
             </div>
-            <div className="coin-hud" aria-label="Monete del giocatore">
-              <img className="coin-hud__icon" src="/coin.png" alt="Moneta" />
-              <span className="coin-hud__text">Coins: {coins}</span>
+            <div className="header-card header-card--level">
+              <span className="header-card__label">Livello</span>
+              <span className="header-card__value">{level}</span>
+            </div>
+            <div className="header-card header-card--profile">
+              <span className="header-card__label">Profilo</span>
+              <span className="header-card__value">{playerName || '-'}</span>
+              <div className="header-card__actions">
+                {isAnonymous && (
+                  <button
+                    className="header-action"
+                    type="button"
+                    onClick={handleGoogle}
+                    disabled={authBusy}
+                  >
+                    {localGuest ? 'Accedi con Google' : 'Collega Google'}
+                  </button>
+                )}
+                <button
+                  className="header-action"
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={authBusy}
+                >
+                  {isAnonymous ? 'Esci ospite' : 'Logout'}
+                </button>
+              </div>
             </div>
           </div>
-          <div className="header__meta">
-            <div className="meta">
-              <span className="meta__label">Parola</span>
-              <span className="meta__value">{wordLength} lettere</span>
-            </div>
-            <div className="meta">
-              <span className="meta__label">Livello</span>
-              <span className="meta__value">{level}</span>
-            </div>
-            <div className="meta">
-              <span className="meta__label">Tentativi</span>
-              <span className="meta__value">
-                {attemptsLeft}/{maxAttempts}
-              </span>
-            </div>
-          </div>
-          <div className="header__actions">
-            {isAnonymous && (
-              <button
-                className="theme-toggle theme-toggle--wide"
-                type="button"
-                onClick={handleGoogle}
-                disabled={authBusy}
-              >
-                <span className="theme-toggle__label">Account</span>
-                <span className="theme-toggle__value">
-                  {localGuest ? 'Accedi con Google' : 'Collega Google'}
-                </span>
-              </button>
-            )}
-            <button className="theme-toggle" type="button" onClick={handleSignOut} disabled={authBusy}>
-              <span className="theme-toggle__label">Account</span>
-              <span className="theme-toggle__value">{isAnonymous ? 'Esci ospite' : 'Logout'}</span>
-            </button>
-            <div className="theme-toggle theme-toggle--static" aria-label="Tema parola">
-              <span className="theme-toggle__label">Tema</span>
-              <span className="theme-toggle__value">{wordTheme || '—'}</span>
+
+          <div className="header__theme-row" aria-label="Tema parola">
+            <div className="theme-banner">
+              <span className="theme-banner__label">Tema</span>
+              <span className="theme-banner__value">{wordTheme || '-'}</span>
             </div>
           </div>
         </header>

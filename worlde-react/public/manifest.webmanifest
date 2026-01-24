@@ -9,15 +9,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/earthapp.jpg",
-      "sizes": "900x900",
-      "type": "image/jpeg"
-    },
-    {
-      "src": "/earthapp-maskable.png",
-      "sizes": "900x900",
-      "type": "image/png",
-      "purpose": "maskable"
+      "src": "/icon.png",
+      "sizes": "2304x1728",
+      "type": "image/png"
     }
   ]
 }
