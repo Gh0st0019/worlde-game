@@ -255,6 +255,22 @@ function App() {
   }, [playerName])
 
   useEffect(() => {
+    if (playerName) {
+      return
+    }
+    const input = nameInputRef.current
+    if (!input) {
+      return
+    }
+    const length = input.value.length
+    try {
+      input.setSelectionRange(length, length)
+    } catch {
+      // Ignore selection errors for non-text inputs.
+    }
+  }, [nameDraft, playerName])
+
+  useEffect(() => {
     if (typeof document === 'undefined') {
       return
     }
