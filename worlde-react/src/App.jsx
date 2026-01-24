@@ -926,10 +926,6 @@ function App() {
     <div className="app-shell">
       <div className={`app app--${gameState}`}>
         <header className="header">
-          <div className="header__title-row">
-            <div className="header__title">Worlde</div>
-          </div>
-
           <div className="header__stats-row">
             <div className="header-card header-card--coins" aria-label="Monete del giocatore">
               <div className="coin-hud coin-hud--banner">
@@ -964,13 +960,6 @@ function App() {
                   {isAnonymous ? 'Esci ospite' : 'Logout'}
                 </button>
               </div>
-            </div>
-          </div>
-
-          <div className="header__theme-row" aria-label="Tema parola">
-            <div className="theme-banner">
-              <span className="theme-banner__label">Tema</span>
-              <span className="theme-banner__value">{wordTheme || '-'}</span>
             </div>
           </div>
         </header>

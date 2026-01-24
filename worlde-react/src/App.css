@@ -17,21 +17,6 @@
   z-index: 1;
 }
 
-.app::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: url("/back.png") center top / cover no-repeat;
-  image-rendering: pixelated;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.app > * {
-  position: relative;
-  z-index: 1;
-}
-
 .credit {
   padding: 0 var(--gap-md) var(--gap-md);
   font-size: var(--hint-font);
@@ -42,12 +27,15 @@
 .header {
   display: grid;
   gap: var(--gap-sm);
-  padding: clamp(0.8rem, 3vw, 1.2rem);
+  padding: clamp(0.9rem, 3vw, 1.3rem);
   position: relative;
   overflow: hidden;
-  background: transparent;
+  align-content: start;
+  min-height: clamp(16rem, 48vh, 24rem);
+  background: url("/back.png") center top / cover no-repeat;
+  image-rendering: pixelated;
   border: none;
-  box-shadow: none;
+  box-shadow: 0 var(--shadow-lift) 0 rgba(47, 68, 32, 0.55);
   --ink: #2f3a1f;
   --ink-dim: #4d5f3b;
   --ink-soft: #71855a;
@@ -59,33 +47,11 @@
   --card-deep: rgba(210, 232, 184, 0.85);
   --accent: #7aa657;
 }
-
-.header__title-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.header__title {
-  font-size: clamp(1.15rem, 5vw, 1.6rem);
-  letter-spacing: var(--title-spacing);
-  text-transform: uppercase;
-  padding: 0.2rem 0.85rem;
-  background: rgba(234, 247, 214, 0.92);
-  border: var(--border-thick) solid var(--border);
-  box-shadow: 0 var(--shadow-rise) 0 rgba(47, 68, 32, 0.55);
-}
-
 .header__stats-row {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 1.1fr);
   gap: var(--gap-sm);
   align-items: start;
-}
-
-.header__theme-row {
-  display: flex;
-  justify-content: center;
 }
 
 .header-card {
@@ -428,29 +394,6 @@
   font-size: var(--meta-value);
 }
 
-.theme-banner {
-  width: 100%;
-  display: grid;
-  justify-items: center;
-  gap: 0.2rem;
-  padding: 0.35rem 0.6rem;
-  background: rgba(234, 247, 214, 0.92);
-  border: var(--border-thick) solid var(--border);
-  box-shadow: 0 var(--shadow-rise) 0 rgba(47, 68, 32, 0.55);
-  text-align: center;
-}
-
-.theme-banner__label {
-  font-size: var(--meta-label);
-  color: var(--ink-dim);
-  letter-spacing: var(--meta-spacing);
-  text-transform: uppercase;
-}
-
-.theme-banner__value {
-  font-size: var(--meta-value);
-  letter-spacing: var(--meta-spacing);
-}
 
 .cabinet {
   flex: 1;
